@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from "react";
 import {
   Container,
   Paper,
@@ -9,14 +9,15 @@ import {
   Button,
   Typography,
   Grid,
-} from '@mui/material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+  Alert,
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+  readonly children?: React.ReactNode;
+  readonly index: number;
+  readonly value: number;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -37,14 +38,14 @@ function TabPanel(props: TabPanelProps) {
 
 const validationSchema = Yup.object({
   nationalId: Yup.string()
-    .required('کد ملی الزامی است')
-    .matches(/^[0-9]{10}$/, 'کد ملی باید 10 رقم باشد'),
-  firstName: Yup.string().required('نام الزامی است'),
-  lastName: Yup.string().required('نام خانوادگی الزامی است'),
+    .required("کد ملی الزامی است")
+    .matches(/^[0-9]{10}$/, "کد ملی باید 10 رقم باشد"),
+  firstName: Yup.string().required("نام الزامی است"),
+  lastName: Yup.string().required("نام خانوادگی الزامی است"),
   age: Yup.number()
-    .required('سن الزامی است')
-    .min(0, 'سن نمیتواند منفی باشد')
-    .max(150, 'سن نامعتبر است'),
+    .required("سن الزامی است")
+    .min(0, "سن نمیتواند منفی باشد")
+    .max(150, "سن نامعتبر است"),
   occupation: Yup.string(),
   address: Yup.string(),
   referralSource: Yup.string(),
@@ -52,8 +53,10 @@ const validationSchema = Yup.object({
 
 const SecretaryDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -63,53 +66,64 @@ const SecretaryDashboard = () => {
     try {
       const response = await fetch(`/api/patients/search?q=${searchQuery}`);
       if (!response.ok) {
-        throw new Error('خطا در جستجوی بیمار');
+        throw new Error("خطا در جستجوی بیمار");
       }
       const data = await response.json();
       setSearchResults(data);
     } catch (error) {
-      console.error('Error searching patients:', error);
+      console.error("Error searching patients:", error);
     }
   };
 
   const formik = useFormik({
     initialValues: {
-      nationalId: '',
-      firstName: '',
-      lastName: '',
-      age: '',
-      occupation: '',
-      address: '',
-      referralSource: '',
+      nationalId: "",
+      firstName: "",
+      lastName: "",
+      age: "",
+      occupation: "",
+      address: "",
+      referralSource: "",
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await fetch('/api/patients', {
-          method: 'POST',
+        const response = await fetch("/api/patients", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(values),
         });
 
         if (!response.ok) {
-          throw new Error('خطا در ثبت بیمار جدید');
+          throw new Error("خطا در ثبت بیمار جدید");
         }
 
-        // Reset form and show success message
         formik.resetForm();
-        // TODO: Show success message
+        setSuccessMessage("بیمار با موفقیت ثبت شد");
+        setErrorMessage(null);
       } catch (error) {
-        console.error('Error creating patient:', error);
-        // TODO: Show error message
+        console.error("Error creating patient:", error);
+        setErrorMessage("خطا در ثبت بیمار. لطفا مجددا تلاش کنید");
+        setSuccessMessage(null);
       }
     },
   });
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorMessage}
+          </Alert>
+        )}
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -136,7 +150,7 @@ const SecretaryDashboard = () => {
                   fullWidth
                   variant="contained"
                   onClick={handleSearch}
-                  sx={{ height: '56px' }}
+                  sx={{ height: "56px" }}
                 >
                   جستجو
                 </Button>
@@ -170,9 +184,12 @@ const SecretaryDashboard = () => {
                   value={formik.values.nationalId}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.nationalId && Boolean(formik.errors.nationalId)
+                    formik.touched.nationalId &&
+                    Boolean(formik.errors.nationalId)
                   }
-                  helperText={formik.touched.nationalId && formik.errors.nationalId}
+                  helperText={
+                    formik.touched.nationalId && formik.errors.nationalId
+                  }
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -183,8 +200,12 @@ const SecretaryDashboard = () => {
                   label="نام"
                   value={formik.values.firstName}
                   onChange={formik.handleChange}
-                  error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-                  helperText={formik.touched.firstName && formik.errors.firstName}
+                  error={
+                    formik.touched.firstName && Boolean(formik.errors.firstName)
+                  }
+                  helperText={
+                    formik.touched.firstName && formik.errors.firstName
+                  }
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -195,7 +216,9 @@ const SecretaryDashboard = () => {
                   label="نام خانوادگی"
                   value={formik.values.lastName}
                   onChange={formik.handleChange}
-                  error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                  error={
+                    formik.touched.lastName && Boolean(formik.errors.lastName)
+                  }
                   helperText={formik.touched.lastName && formik.errors.lastName}
                 />
               </Grid>
@@ -262,4 +285,4 @@ const SecretaryDashboard = () => {
   );
 };
 
-export default SecretaryDashboard; 
+export default SecretaryDashboard;

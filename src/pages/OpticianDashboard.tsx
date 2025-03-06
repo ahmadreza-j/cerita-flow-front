@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Paper,
@@ -16,9 +16,9 @@ import {
   DialogActions,
   TextField,
   Grid,
-} from '@mui/material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 interface Prescription {
   id: number;
@@ -44,20 +44,21 @@ interface GlassesData {
 }
 
 const validationSchema = Yup.object({
-  frameCode: Yup.string().required('کد فریم الزامی است'),
-  lensType: Yup.string().required('نوع لنز الزامی است'),
+  frameCode: Yup.string().required("کد فریم الزامی است"),
+  lensType: Yup.string().required("نوع لنز الزامی است"),
   lensFeatures: Yup.string(),
   framePrice: Yup.number()
-    .required('قیمت فریم الزامی است')
-    .min(0, 'قیمت نمیتواند منفی باشد'),
+    .required("قیمت فریم الزامی است")
+    .min(0, "قیمت نمیتواند منفی باشد"),
   lensPrice: Yup.number()
-    .required('قیمت لنز الزامی است')
-    .min(0, 'قیمت نمیتواند منفی باشد'),
+    .required("قیمت لنز الزامی است")
+    .min(0, "قیمت نمیتواند منفی باشد"),
 });
 
 const OpticianDashboard = () => {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [selectedPrescription, setSelectedPrescription] =
+    useState<Prescription | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -66,14 +67,14 @@ const OpticianDashboard = () => {
 
   const fetchPrescriptions = async () => {
     try {
-      const response = await fetch('/api/prescriptions/daily');
+      const response = await fetch("/api/prescriptions/daily");
       if (!response.ok) {
-        throw new Error('خطا در دریافت لیست نسخه‌ها');
+        throw new Error("خطا در دریافت لیست نسخه‌ها");
       }
       const data = await response.json();
       setPrescriptions(data);
     } catch (error) {
-      console.error('Error fetching prescriptions:', error);
+      console.error("Error fetching prescriptions:", error);
     }
   };
 
@@ -84,9 +85,9 @@ const OpticianDashboard = () => {
 
   const formik = useFormik<GlassesData>({
     initialValues: {
-      frameCode: '',
-      lensType: '',
-      lensFeatures: '',
+      frameCode: "",
+      lensType: "",
+      lensFeatures: "",
       framePrice: 0,
       lensPrice: 0,
     },
@@ -96,9 +97,9 @@ const OpticianDashboard = () => {
 
       try {
         const response = await fetch(`/api/glasses`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             ...values,
@@ -107,13 +108,13 @@ const OpticianDashboard = () => {
         });
 
         if (!response.ok) {
-          throw new Error('خطا در ثبت عینک');
+          throw new Error("خطا در ثبت عینک");
         }
 
         setDialogOpen(false);
         fetchPrescriptions();
       } catch (error) {
-        console.error('Error submitting glasses:', error);
+        console.error("Error submitting glasses:", error);
       }
     },
   });
@@ -143,10 +144,12 @@ const OpticianDashboard = () => {
                 </TableCell>
                 <TableCell>{prescription.nationalId}</TableCell>
                 <TableCell>
-                  {prescription.rightEyeSphere} / {prescription.rightEyeCylinder} / {prescription.rightEyeAxis}
+                  {prescription.rightEyeSphere} /{" "}
+                  {prescription.rightEyeCylinder} / {prescription.rightEyeAxis}
                 </TableCell>
                 <TableCell>
-                  {prescription.leftEyeSphere} / {prescription.leftEyeCylinder} / {prescription.leftEyeAxis}
+                  {prescription.leftEyeSphere} / {prescription.leftEyeCylinder}{" "}
+                  / {prescription.leftEyeAxis}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -170,7 +173,8 @@ const OpticianDashboard = () => {
         fullWidth
       >
         <DialogTitle>
-          ثبت عینک - {selectedPrescription?.firstName} {selectedPrescription?.lastName}
+          ثبت عینک - {selectedPrescription?.firstName}{" "}
+          {selectedPrescription?.lastName}
         </DialogTitle>
         <form onSubmit={formik.handleSubmit}>
           <DialogContent>
@@ -182,8 +186,12 @@ const OpticianDashboard = () => {
                   label="کد فریم"
                   value={formik.values.frameCode}
                   onChange={formik.handleChange}
-                  error={formik.touched.frameCode && Boolean(formik.errors.frameCode)}
-                  helperText={formik.touched.frameCode && formik.errors.frameCode}
+                  error={
+                    formik.touched.frameCode && Boolean(formik.errors.frameCode)
+                  }
+                  helperText={
+                    formik.touched.frameCode && formik.errors.frameCode
+                  }
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -193,7 +201,9 @@ const OpticianDashboard = () => {
                   label="نوع لنز"
                   value={formik.values.lensType}
                   onChange={formik.handleChange}
-                  error={formik.touched.lensType && Boolean(formik.errors.lensType)}
+                  error={
+                    formik.touched.lensType && Boolean(formik.errors.lensType)
+                  }
                   helperText={formik.touched.lensType && formik.errors.lensType}
                 />
               </Grid>
@@ -216,8 +226,13 @@ const OpticianDashboard = () => {
                   label="قیمت فریم (تومان)"
                   value={formik.values.framePrice}
                   onChange={formik.handleChange}
-                  error={formik.touched.framePrice && Boolean(formik.errors.framePrice)}
-                  helperText={formik.touched.framePrice && formik.errors.framePrice}
+                  error={
+                    formik.touched.framePrice &&
+                    Boolean(formik.errors.framePrice)
+                  }
+                  helperText={
+                    formik.touched.framePrice && formik.errors.framePrice
+                  }
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -228,13 +243,18 @@ const OpticianDashboard = () => {
                   label="قیمت لنز (تومان)"
                   value={formik.values.lensPrice}
                   onChange={formik.handleChange}
-                  error={formik.touched.lensPrice && Boolean(formik.errors.lensPrice)}
-                  helperText={formik.touched.lensPrice && formik.errors.lensPrice}
+                  error={
+                    formik.touched.lensPrice && Boolean(formik.errors.lensPrice)
+                  }
+                  helperText={
+                    formik.touched.lensPrice && formik.errors.lensPrice
+                  }
                 />
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">
-                  قیمت کل: {formik.values.framePrice + formik.values.lensPrice} تومان
+                  قیمت کل: {formik.values.framePrice + formik.values.lensPrice}{" "}
+                  تومان
                 </Typography>
               </Grid>
             </Grid>
@@ -251,4 +271,4 @@ const OpticianDashboard = () => {
   );
 };
 
-export default OpticianDashboard; 
+export default OpticianDashboard;

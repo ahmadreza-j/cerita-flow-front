@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
@@ -20,7 +20,7 @@ import { TimePicker } from '@mui/x-date-pickers';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import moment from 'moment-jalaali';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '../../components/layout/MainLayout';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 

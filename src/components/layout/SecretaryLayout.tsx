@@ -8,7 +8,7 @@ import {
     Typography,
     Divider,
     IconButton,
-    ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     useTheme
@@ -58,25 +58,24 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({ children }) => {
             <Divider />
             <List>
                 {menuItems.map((item) => (
-                    <ListItem
-                        button
+                    <ListItemButton
                         key={item.text}
                         onClick={() => navigate(item.path)}
                         selected={location.pathname === item.path}
                     >
                         <ListItemIcon>{item.icon}</ListItemIcon>
                         <ListItemText primary={item.text} />
-                    </ListItem>
+                    </ListItemButton>
                 ))}
             </List>
             <Divider />
             <List>
-                <ListItem button onClick={logout}>
+                <ListItemButton onClick={logout}>
                     <ListItemIcon>
                         <LogoutIcon />
                     </ListItemIcon>
                     <ListItemText primary="خروج" />
-                </ListItem>
+                </ListItemButton>
             </List>
         </div>
     );

@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import { useMutation } from 'react-query';
-import axios from 'axios';
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { useMutation } from "react-query";
+import axios, { AxiosError } from "axios";
 import {
   Box,
   Button,
@@ -11,63 +11,80 @@ import {
   TextField,
   Typography,
   Alert,
-} from '@mui/material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import MainLayout from '@/components/layout/MainLayout';
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import MainLayout from "../../components/layout/MainLayout";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+interface PatientFormValues {
+  national_id: string;
+  first_name: string;
+  last_name: string;
+  age: string;
+  phone: string;
+  occupation: string;
+  address: string;
+  referral_source: string;
+}
+
+interface ApiError {
+  error: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const validationSchema = Yup.object({
   national_id: Yup.string()
-    .required('کد ملی الزامی است')
-    .matches(/^[0-9]{10}$/, 'کد ملی باید 10 رقم باشد'),
+    .required("کد ملی الزامی است")
+    .matches(/^[0-9]{10}$/, "کد ملی باید 10 رقم باشد"),
   first_name: Yup.string()
-    .required('نام الزامی است')
-    .min(2, 'نام باید حداقل 2 کاراکتر باشد'),
+    .required("نام الزامی است")
+    .min(2, "نام باید حداقل 2 کاراکتر باشد"),
   last_name: Yup.string()
-    .required('نام خانوادگی الزامی است')
-    .min(2, 'نام خانوادگی باید حداقل 2 کاراکتر باشد'),
+    .required("نام خانوادگی الزامی است")
+    .min(2, "نام خانوادگی باید حداقل 2 کاراکتر باشد"),
   age: Yup.number()
-    .min(0, 'سن نمی‌تواند منفی باشد')
-    .max(120, 'سن نامعتبر است')
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .min(0, "سن نمی‌تواند منفی باشد")
+    .max(120, "سن نامعتبر است")
     .nullable(),
   phone: Yup.string()
-    .matches(/^09[0-9]{9}$/, 'شماره موبایل نامعتبر است')
+    .matches(/^09[0-9]{9}$/, "شماره موبایل نامعتبر است")
     .nullable(),
   occupation: Yup.string().nullable(),
   address: Yup.string().nullable(),
   referral_source: Yup.string().nullable(),
 });
 
-const NewPatientPage = () => {
+const NewPatientPage: React.FC = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  const mutation = useMutation(
-    (values: any) => axios.post(`${API_URL}/patients`, values),
+  const mutation = useMutation<void, AxiosError<ApiError>, PatientFormValues>(
+    (values) => axios.post(`${API_URL}/patients`, values),
     {
       onSuccess: () => {
-        router.push('/patients');
+        router.push("/patients");
       },
-      onError: (error: any) => {
+      onError: (error) => {
         setError(
-          error.response?.data?.error || 'خطا در ثبت اطلاعات. لطفا مجددا تلاش کنید'
+          error.response?.data?.error ||
+            "خطا در ثبت اطلاعات. لطفا مجددا تلاش کنید"
         );
       },
     }
   );
 
-  const formik = useFormik({
+  const formik = useFormik<PatientFormValues>({
     initialValues: {
-      national_id: '',
-      first_name: '',
-      last_name: '',
-      age: '',
-      phone: '',
-      occupation: '',
-      address: '',
-      referral_source: '',
+      national_id: "",
+      first_name: "",
+      last_name: "",
+      age: "",
+      phone: "",
+      occupation: "",
+      address: "",
+      referral_source: "",
     },
     validationSchema,
     onSubmit: (values) => {
@@ -78,7 +95,7 @@ const NewPatientPage = () => {
 
   return (
     <MainLayout title="ثبت بیمار جدید">
-      <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
+      <Box sx={{ maxWidth: 800, mx: "auto", mt: 4 }}>
         <Card>
           <CardContent>
             <Typography variant="h5" component="h1" gutterBottom>
@@ -95,6 +112,7 @@ const NewPatientPage = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="کد ملی"
                     name="national_id"
                     value={formik.values.national_id}
@@ -110,6 +128,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="نام"
                     name="first_name"
                     value={formik.values.first_name}
@@ -125,12 +144,14 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="نام خانوادگی"
                     name="last_name"
                     value={formik.values.last_name}
                     onChange={formik.handleChange}
                     error={
-                      formik.touched.last_name && Boolean(formik.errors.last_name)
+                      formik.touched.last_name &&
+                      Boolean(formik.errors.last_name)
                     }
                     helperText={
                       formik.touched.last_name && formik.errors.last_name
@@ -139,6 +160,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="سن"
                     name="age"
                     type="number"
@@ -150,6 +172,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="شماره موبایل"
                     name="phone"
                     value={formik.values.phone}
@@ -160,6 +183,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    fullWidth
                     label="شغل"
                     name="occupation"
                     value={formik.values.occupation}
@@ -168,6 +192,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
+                    fullWidth
                     label="آدرس"
                     name="address"
                     multiline
@@ -178,6 +203,7 @@ const NewPatientPage = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
+                    fullWidth
                     label="نحوه آشنایی"
                     name="referral_source"
                     value={formik.values.referral_source}
@@ -185,7 +211,9 @@ const NewPatientPage = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  <Box
+                    sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}
+                  >
                     <Button
                       type="button"
                       onClick={() => router.back()}
@@ -198,7 +226,7 @@ const NewPatientPage = () => {
                       variant="contained"
                       disabled={mutation.isLoading}
                     >
-                      {mutation.isLoading ? 'در حال ثبت...' : 'ثبت بیمار'}
+                      {mutation.isLoading ? "در حال ثبت..." : "ثبت بیمار"}
                     </Button>
                   </Box>
                 </Grid>
@@ -211,4 +239,4 @@ const NewPatientPage = () => {
   );
 };
 
-export default NewPatientPage; 
+export default NewPatientPage;

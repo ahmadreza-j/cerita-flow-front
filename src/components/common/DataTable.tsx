@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Paper,
@@ -13,20 +12,20 @@ import {
   TextField,
   Typography,
   InputAdornment,
-} from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
+} from "@mui/material";
+import { Search as SearchIcon } from "@mui/icons-material";
 
 interface Column {
   id: string;
   label: string;
   minWidth?: number;
-  align?: 'right' | 'left' | 'center';
+  align?: "right" | "left" | "center";
   format?: (value: any) => string;
 }
 
 interface DataTableProps {
   columns: Column[];
-  data: any[];
+  data: Array<{ id: string | number } & Record<string, any>>;
   title?: string;
   searchPlaceholder?: string;
   onSearch?: (searchTerm: string) => void;
@@ -36,18 +35,20 @@ const DataTable = ({
   columns,
   data,
   title,
-  searchPlaceholder = 'جستجو...',
+  searchPlaceholder = "جستجو...",
   onSearch,
 }: DataTableProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
@@ -67,7 +68,9 @@ const DataTable = ({
     : data.filter((row) =>
         Object.values(row).some(
           (value) =>
-            value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            value != null &&
+            (typeof value === "string" || typeof value === "number") &&
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
 
@@ -77,7 +80,7 @@ const DataTable = ({
   );
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+    <Paper sx={{ width: "100%", overflow: "hidden" }}>
       <Box sx={{ p: 2 }}>
         {title && (
           <Typography variant="h6" component="h2" gutterBottom>
@@ -117,8 +120,8 @@ const DataTable = ({
           </TableHead>
           <TableBody>
             {displayData.length > 0 ? (
-              displayData.map((row, index) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+              displayData.map((row) => (
+                <TableRow hover tabIndex={-1} key={row.id}>
                   {columns.map((column) => {
                     const value = row[column.id];
                     return (
@@ -148,12 +151,13 @@ const DataTable = ({
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         labelRowsPerPage="تعداد در هر صفحه:"
-        labelDisplayedRows={({ from, to, count }) =>
-          `${from}-${to} از ${count !== -1 ? count : `بیش از ${to}`}`
-        }
+        labelDisplayedRows={({ from, to, count }) => {
+          const total = count !== -1 ? count : `بیش از ${to}`;
+          return `${from}-${to} از ${total}`;
+        }}
       />
     </Paper>
   );
 };
 
-export default DataTable; 
+export default DataTable;

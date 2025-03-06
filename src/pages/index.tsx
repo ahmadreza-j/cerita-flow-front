@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import LoginForm from '@/components/auth/LoginForm';
-import { useAuth } from '@/hooks/useAuth';
+import LoginForm from '../components/auth/LoginForm';
+import useAuth from '../hooks/useAuth';
 
 const Home = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const Home = () => {
   }, [isAuthenticated, user, router]);
 
   const handleLogin = async (values: { username: string; password: string }) => {
-    await login(values);
+    await login(values.username, values.password);
   };
 
   // If already authenticated, show loading or nothing while redirecting

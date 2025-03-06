@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Paper,
@@ -18,9 +18,9 @@ import {
   FormControlLabel,
   Switch,
   Grid,
-} from '@mui/material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 interface Visit {
   id: number;
@@ -46,20 +46,20 @@ interface ExaminationData {
 }
 
 const validationSchema = Yup.object({
-  visualAcuityRight: Yup.string().required('دید چشم راست الزامی است'),
-  visualAcuityLeft: Yup.string().required('دید چشم چپ الزامی است'),
-  rightEyeSphere: Yup.number().required('اسفر چشم راست الزامی است'),
-  rightEyeCylinder: Yup.number().required('سیلندر چشم راست الزامی است'),
+  visualAcuityRight: Yup.string().required("دید چشم راست الزامی است"),
+  visualAcuityLeft: Yup.string().required("دید چشم چپ الزامی است"),
+  rightEyeSphere: Yup.number().required("اسفر چشم راست الزامی است"),
+  rightEyeCylinder: Yup.number().required("سیلندر چشم راست الزامی است"),
   rightEyeAxis: Yup.number()
-    .min(0, 'محور باید بین 0 و 180 باشد')
-    .max(180, 'محور باید بین 0 و 180 باشد')
-    .required('محور چشم راست الزامی است'),
-  leftEyeSphere: Yup.number().required('اسفر چشم چپ الزامی است'),
-  leftEyeCylinder: Yup.number().required('سیلندر چشم چپ الزامی است'),
+    .min(0, "محور باید بین 0 و 180 باشد")
+    .max(180, "محور باید بین 0 و 180 باشد")
+    .required("محور چشم راست الزامی است"),
+  leftEyeSphere: Yup.number().required("اسفر چشم چپ الزامی است"),
+  leftEyeCylinder: Yup.number().required("سیلندر چشم چپ الزامی است"),
   leftEyeAxis: Yup.number()
-    .min(0, 'محور باید بین 0 و 180 باشد')
-    .max(180, 'محور باید بین 0 و 180 باشد')
-    .required('محور چشم چپ الزامی است'),
+    .min(0, "محور باید بین 0 و 180 باشد")
+    .max(180, "محور باید بین 0 و 180 باشد")
+    .required("محور چشم چپ الزامی است"),
   doctorNotes: Yup.string(),
 });
 
@@ -74,14 +74,14 @@ const DoctorDashboard = () => {
 
   const fetchVisits = async () => {
     try {
-      const response = await fetch('/api/visits/pending');
+      const response = await fetch("/api/visits/pending");
       if (!response.ok) {
-        throw new Error('خطا در دریافت لیست ویزیت‌ها');
+        throw new Error("خطا در دریافت لیست ویزیت‌ها");
       }
       const data = await response.json();
       setVisits(data);
     } catch (error) {
-      console.error('Error fetching visits:', error);
+      console.error("Error fetching visits:", error);
     }
   };
 
@@ -92,8 +92,8 @@ const DoctorDashboard = () => {
 
   const formik = useFormik<ExaminationData>({
     initialValues: {
-      visualAcuityRight: '',
-      visualAcuityLeft: '',
+      visualAcuityRight: "",
+      visualAcuityLeft: "",
       prescriptionNeeded: false,
       rightEyeSphere: 0,
       rightEyeCylinder: 0,
@@ -101,29 +101,32 @@ const DoctorDashboard = () => {
       leftEyeSphere: 0,
       leftEyeCylinder: 0,
       leftEyeAxis: 0,
-      doctorNotes: '',
+      doctorNotes: "",
     },
     validationSchema,
     onSubmit: async (values) => {
       if (!selectedVisit) return;
 
       try {
-        const response = await fetch(`/api/visits/${selectedVisit.id}/examination`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(values),
-        });
+        const response = await fetch(
+          `/api/visits/${selectedVisit.id}/examination`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('خطا در ثبت معاینه');
+          throw new Error("خطا در ثبت معاینه");
         }
 
         setDialogOpen(false);
         fetchVisits();
       } catch (error) {
-        console.error('Error submitting examination:', error);
+        console.error("Error submitting examination:", error);
       }
     },
   });
@@ -221,7 +224,10 @@ const DoctorDashboard = () => {
                     <Switch
                       checked={formik.values.prescriptionNeeded}
                       onChange={(e) =>
-                        formik.setFieldValue('prescriptionNeeded', e.target.checked)
+                        formik.setFieldValue(
+                          "prescriptionNeeded",
+                          e.target.checked
+                        )
                       }
                       name="prescriptionNeeded"
                     />
@@ -280,7 +286,8 @@ const DoctorDashboard = () => {
                         Boolean(formik.errors.rightEyeAxis)
                       }
                       helperText={
-                        formik.touched.rightEyeAxis && formik.errors.rightEyeAxis
+                        formik.touched.rightEyeAxis &&
+                        formik.errors.rightEyeAxis
                       }
                     />
                   </Grid>
@@ -364,4 +371,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard; 
+export default DoctorDashboard;
