@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import useAuth from '../hooks/useAuth';
 import { Role } from '../types/auth';
 
@@ -9,17 +9,22 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+    const router = useRouter();
     const { user, isAuthenticated } = useAuth();
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+    useEffect(() => {
+        if (!isAuthenticated) {
+            router.push('/login');
+        } else if (!user || !allowedRoles.includes(user.role)) {
+            router.push('/');
+        }
+    }, [isAuthenticated, user, allowedRoles, router]);
+
+    if (!isAuthenticated || !user || !allowedRoles.includes(user.role)) {
+        return null;
     }
 
-    if (!user || !allowedRoles.includes(user.role)) {
-        return <Navigate to="/" replace />;
-    }
-
-    return children ? <>{children}</> : <Outlet />;
+    return <>{children}</>;
 };
 
 export default ProtectedRoute; 

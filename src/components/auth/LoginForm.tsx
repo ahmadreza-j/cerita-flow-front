@@ -12,11 +12,13 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 interface LoginFormProps {
-  onSubmit: (values: { username: string; password: string }) => Promise<void>;
+  onSubmit: (values: { email: string; password: string }) => Promise<void>;
 }
 
 const validationSchema = Yup.object({
-  username: Yup.string().required("نام کاربری الزامی است"),
+  email: Yup.string()
+    .email("ایمیل نامعتبر است")
+    .required("ایمیل الزامی است"),
   password: Yup.string()
     .required("رمز عبور الزامی است")
     .min(6, "رمز عبور باید حداقل 6 کاراکتر باشد"),
@@ -27,7 +29,7 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
 
   const formik = useFormik({
     initialValues: {
-      username: "",
+      email: "",
       password: "",
     },
     validationSchema,
@@ -66,16 +68,19 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
           <form onSubmit={formik.handleSubmit}>
             <TextField
               margin="normal"
-              label="نام کاربری"
-              name="username"
-              value={formik.values.username}
+              fullWidth
+              label="ایمیل"
+              name="email"
+              type="email"
+              value={formik.values.email}
               onChange={formik.handleChange}
-              error={formik.touched.username && Boolean(formik.errors.username)}
-              helperText={formik.touched.username && formik.errors.username}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
             />
 
             <TextField
               margin="normal"
+              fullWidth
               label="رمز عبور"
               name="password"
               type="password"

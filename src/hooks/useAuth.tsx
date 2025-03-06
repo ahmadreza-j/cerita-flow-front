@@ -15,7 +15,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   register: (data: {
     username: string;
     email: string;
@@ -52,12 +52,12 @@ const authStore = createStore<AuthState>((set) => ({
     }
   },
 
-  login: async (username: string, password: string) => {
+  login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-        { username, password }
+        { email, password }
       );
 
       const { token, user } = response.data;

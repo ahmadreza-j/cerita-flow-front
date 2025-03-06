@@ -1,7 +1,11 @@
 import React from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { useRouter } from "next/router";
+import dynamic from "next/dynamic";
+
+// Components
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import Home from "../pages";
 
 // Layouts
 import AdminLayout from "../components/layout/AdminLayout";
@@ -12,21 +16,12 @@ import OpticianLayout from "../components/layout/OpticianLayout";
 
 // Admin Pages
 import UserManagement from "../pages/admin/UserManagement";
-// import ClinicManagement from '../pages/admin/ClinicManagement';
-
-// Clinic Manager Pages
-// import ClinicDashboard from '../pages/clinic-manager/Dashboard';
-// import StaffManagement from '../pages/clinic-manager/StaffManagement';
 
 // Secretary Pages
-// import AppointmentManagement from '../pages/secretary/AppointmentManagement';
-// import PatientManagement from '../pages/secretary/PatientManagement';
 import SecretaryDashboard from "../pages/secretary/SecretaryDashboard";
 
 // Doctor Pages
 import DoctorDashboard from "../pages/doctor/DoctorDashboard";
-// import PatientExamination from '../pages/doctor/PatientExamination';
-// import PrescriptionManagement from '../pages/doctor/PrescriptionManagement';
 
 // Optician Pages
 import ProductManagement from "../pages/optician/ProductManagement";
@@ -37,95 +32,47 @@ import ProtectedRoute from "./ProtectedRoute";
 import { Role } from "../types/auth";
 
 const AppRoutes: React.FC = () => {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+  const router = useRouter();
+  const { pathname } = router;
 
-      {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={[Role.ADMIN]}>
-            <AdminLayout>
-              <Outlet />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<UserManagement />} />
-        <Route path="users" element={<UserManagement />} />
-        {/* <Route path="clinics" element={<ClinicManagement />} /> */}
-      </Route>
+  // Helper function to render protected route
+  const renderProtectedRoute = (Component: React.ComponentType, allowedRoles: Role[], Layout: React.ComponentType<any>) => {
+    return (
+      <ProtectedRoute allowedRoles={allowedRoles}>
+        <Layout>
+          <Component />
+        </Layout>
+      </ProtectedRoute>
+    );
+  };
 
-      {/* Clinic Manager Routes */}
-      <Route
-        path="/clinic-manager"
-        element={
-          <ProtectedRoute allowedRoles={[Role.CLINIC_MANAGER]}>
-            <ClinicManagerLayout>
-              <Outlet />
-            </ClinicManagerLayout>
-          </ProtectedRoute>
-        }
-      >
-        {/* <Route index element={<ClinicDashboard />} />
-        <Route path="staff" element={<StaffManagement />} /> */}
-      </Route>
-
-      {/* Secretary Routes */}
-      <Route
-        path="/secretary"
-        element={
-          <ProtectedRoute allowedRoles={[Role.SECRETARY]}>
-            <SecretaryLayout>
-              <Outlet />
-            </SecretaryLayout>
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<SecretaryDashboard />} />
-        {/* <Route path="appointments" element={<AppointmentManagement />} />
-        <Route path="patients" element={<PatientManagement />} /> */}
-      </Route>
-
-      {/* Doctor Routes */}
-      <Route
-        path="/doctor"
-        element={
-          <ProtectedRoute allowedRoles={[Role.DOCTOR]}>
-            <DoctorLayout>
-              <Outlet />
-            </DoctorLayout>
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<DoctorDashboard />} />
-        {/* <Route path="examination/:patientId" element={<PatientExamination />} />
-        <Route path="prescriptions" element={<PrescriptionManagement />} /> */}
-      </Route>
-
-      {/* Optician Routes */}
-      <Route
-        path="/optician"
-        element={
-          <ProtectedRoute allowedRoles={[Role.OPTICIAN]}>
-            <OpticianLayout>
-              <Outlet />
-            </OpticianLayout>
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<OpticianDashboard />} />
-        <Route path="products" element={<ProductManagement />} />
-        <Route path="sales" element={<SalesManagement />} />
-      </Route>
-
-      {/* Default redirect based on user role */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
-  );
+  // Render appropriate component based on current path
+  switch (pathname) {
+    case '/':
+      return <Home />;
+    case '/login':
+      return <Login />;
+    case '/register':
+      return <Register />;
+    case '/admin':
+    case '/admin/users':
+      return renderProtectedRoute(UserManagement, [Role.ADMIN], AdminLayout);
+    case '/clinic-manager':
+      return renderProtectedRoute(() => <div>Dashboard</div>, [Role.CLINIC_MANAGER], ClinicManagerLayout);
+    case '/secretary':
+      return renderProtectedRoute(SecretaryDashboard, [Role.SECRETARY], SecretaryLayout);
+    case '/doctor':
+      return renderProtectedRoute(DoctorDashboard, [Role.DOCTOR], DoctorLayout);
+    case '/optician':
+      return renderProtectedRoute(OpticianDashboard, [Role.OPTICIAN], OpticianLayout);
+    case '/optician/products':
+      return renderProtectedRoute(ProductManagement, [Role.OPTICIAN], OpticianLayout);
+    case '/optician/sales':
+      return renderProtectedRoute(SalesManagement, [Role.OPTICIAN], OpticianLayout);
+    default:
+      router.push('/login');
+      return null;
+  }
 };
 
 export default AppRoutes;

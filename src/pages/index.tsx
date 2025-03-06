@@ -1,45 +1,44 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import LoginForm from '../components/auth/LoginForm';
 import useAuth from '../hooks/useAuth';
 import { Role } from '../types/auth';
 
 const Home = () => {
   const router = useRouter();
-  const { isAuthenticated, login, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
       // Redirect based on user role
       switch (user.role) {
         case Role.SECRETARY:
-          router.push('/patients');
+          router.push('/secretary');
           break;
         case Role.DOCTOR:
-          router.push('/visits');
+          router.push('/doctor');
           break;
         case Role.OPTICIAN:
-          router.push('/glasses');
+          router.push('/optician');
           break;
         case Role.ADMIN:
-          router.push('/dashboard');
+          router.push('/admin');
+          break;
+        case Role.CLINIC_MANAGER:
+          router.push('/clinic-manager');
           break;
         default:
-          router.push('/patients');
+          router.push('/login');
       }
     }
   }, [isAuthenticated, user, router]);
 
-  const handleLogin = async (values: { username: string; password: string }) => {
-    await login(values.username, values.password);
-  };
-
-  // If already authenticated, show loading or nothing while redirecting
-  if (isAuthenticated) {
-    return null;
-  }
-
-  return <LoginForm onSubmit={handleLogin} />;
+  // Show nothing while redirecting
+  return null;
 };
 
 export default Home; 

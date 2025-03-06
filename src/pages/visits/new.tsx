@@ -167,7 +167,7 @@ const NewVisitPage = () => {
                       textField: {
                         fullWidth: true,
                         error: formik.touched.visit_time && Boolean(formik.errors.visit_time),
-                        helperText: formik.touched.visit_time && formik.errors.visit_time,
+                        helperText: formik.touched.visit_time && (formik.errors.visit_time as string),
                       },
                     }}
                   />
