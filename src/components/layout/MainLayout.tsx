@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import React, { ReactNode, useState } from "react";
 import {
   AppBar,
   Box,
@@ -6,21 +6,21 @@ import {
   Drawer,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Toolbar,
   Typography,
   useTheme,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   Person as PersonIcon,
   CalendarToday as CalendarIcon,
   Visibility as VisibilityIcon,
   Logout as LogoutIcon,
-} from '@mui/icons-material';
-import { useRouter } from 'next/router';
+} from "@mui/icons-material";
+import { useRouter } from "next/router";
 
 const drawerWidth = 240;
 
@@ -39,9 +39,9 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
   };
 
   const menuItems = [
-    { text: 'پرونده بیماران', icon: <PersonIcon />, path: '/patients' },
-    { text: 'ویزیت‌های امروز', icon: <CalendarIcon />, path: '/visits' },
-    { text: 'معاینات', icon: <VisibilityIcon />, path: '/examinations' },
+    { text: "پرونده بیماران", icon: <PersonIcon />, path: "/patients" },
+    { text: "ویزیت‌های امروز", icon: <CalendarIcon />, path: "/visits" },
+    { text: "معاینات", icon: <VisibilityIcon />, path: "/examinations" },
   ];
 
   const drawer = (
@@ -53,26 +53,32 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
       </Toolbar>
       <List>
         {menuItems.map((item) => (
-          <ListItem
-            button
+          <ListItemButton
             key={item.text}
             onClick={() => router.push(item.path)}
             selected={router.pathname === item.path}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
-          </ListItem>
+          </ListItemButton>
         ))}
-        <ListItem button onClick={() => {/* TODO: handle logout */}}>
-          <ListItemIcon><LogoutIcon /></ListItemIcon>
+        <ListItemButton
+          onClick={() => {
+            localStorage.removeItem("token");
+            router.push("/login");
+          }}
+        >
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
           <ListItemText primary="خروج" />
-        </ListItem>
+        </ListItemButton>
       </List>
     </div>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -87,7 +93,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { sm: "none" } }}
           >
             <MenuIcon />
           </IconButton>
@@ -102,16 +108,16 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+          anchor={theme.direction === "rtl" ? "right" : "left"}
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
               width: drawerWidth,
             },
           }}
@@ -120,11 +126,11 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+          anchor={theme.direction === "rtl" ? "right" : "left"}
           sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
+            display: { xs: "none", sm: "block" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
               width: drawerWidth,
             },
           }}
@@ -148,4 +154,4 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
   );
 };
 
-export default MainLayout; 
+export default MainLayout;
