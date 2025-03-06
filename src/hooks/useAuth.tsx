@@ -1,12 +1,12 @@
 import { createStore } from "zustand/vanilla";
 import { useStore } from "zustand";
 import axios from "axios";
-import React, { useEffect } from 'react';
-
+import React, { useEffect } from "react";
+import { type Role } from "../types/auth";
 interface User {
   id: string;
   username: string;
-  role: "doctor" | "secretary" | "optician" | "admin";
+  role: Role;
 }
 
 interface AuthState {
@@ -16,7 +16,14 @@ interface AuthState {
   error: string | null;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (data: { username: string; email: string; password: string; firstName?: string; lastName?: string; phoneNumber?: string }) => Promise<void>;
+  register: (data: {
+    username: string;
+    email: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+  }) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -31,7 +38,10 @@ const authStore = createStore<AuthState>((set) => ({
   register: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, data);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+        data
+      );
       set({ isLoading: false });
     } catch (error: any) {
       set({
@@ -89,14 +99,17 @@ const authStore = createStore<AuthState>((set) => ({
 
 const useAuth = () => useStore(authStore);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       // Fetch user data
-      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`)
-        .then(response => {
+      axios
+        .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`)
+        .then((response) => {
           authStore.setState({
             user: response.data,
             token,

@@ -34,21 +34,22 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { Role } from "../../types/auth";
 
 interface User {
   id: number;
   username: string;
   fullName: string;
-  role: string;
+  role: Role;
   phone: string;
   isActive: boolean;
   createdAt: string;
 }
 
 const roles = [
-  { value: "doctor", label: "پزشک" },
-  { value: "secretary", label: "منشی" },
-  { value: "optician", label: "عینک‌ساز" },
+  { value: Role.DOCTOR, label: "پزشک" },
+  { value: Role.SECRETARY, label: "منشی" },
+  { value: Role.OPTICIAN, label: "عینک‌ساز" },
 ];
 
 const validationSchema = yup.object({

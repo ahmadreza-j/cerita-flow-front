@@ -17,6 +17,7 @@ import MainLayout from "../../components/layout/MainLayout";
 import DataTable from "../../components/common/DataTable";
 import { useRouter } from "next/router";
 import useAuth from "../../hooks/useAuth";
+import { Role } from "../../types/auth";
 
 interface Visit {
   id: number;
@@ -106,7 +107,7 @@ const VisitsPage: React.FC = () => {
                 onChange={handleDateChange}
                 format="jYYYY/jMM/jDD"
               />
-              {user?.role === "secretary" && (
+              {user?.role === Role.SECRETARY && (
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}

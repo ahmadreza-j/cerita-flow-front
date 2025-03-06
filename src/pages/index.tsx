@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import LoginForm from '../components/auth/LoginForm';
 import useAuth from '../hooks/useAuth';
+import { Role } from '../types/auth';
 
 const Home = () => {
   const router = useRouter();
@@ -11,16 +12,16 @@ const Home = () => {
     if (isAuthenticated && user) {
       // Redirect based on user role
       switch (user.role) {
-        case 'secretary':
+        case Role.SECRETARY:
           router.push('/patients');
           break;
-        case 'doctor':
+        case Role.DOCTOR:
           router.push('/visits');
           break;
-        case 'optician':
+        case Role.OPTICIAN:
           router.push('/glasses');
           break;
-        case 'admin':
+        case Role.ADMIN:
           router.push('/dashboard');
           break;
         default:
