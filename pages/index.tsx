@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import useAuth from '../hooks/useAuth';
-import { Role } from '../types/auth';
+import useAuth from '../src/hooks/useAuth';
+import { Role } from '../src/types/auth';
 
-const Home = () => {
+export default function Home() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
@@ -37,8 +37,10 @@ const Home = () => {
     }
   }, [isAuthenticated, user, router]);
 
-  // Show nothing while redirecting
-  return null;
-};
-
-export default Home; 
+  // Show loading while redirecting
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      در حال بارگذاری...
+    </div>
+  );
+} 

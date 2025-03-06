@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import type { AppProps } from 'next/app';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,8 +7,8 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
-import AuthProvider from './contexts/AuthContext';
-import AppRoutes from './routes';
+import AuthProvider from '../src/contexts/AuthContext';
+import '../styles/globals.css';
 
 const queryClient = new QueryClient();
 
@@ -26,21 +26,19 @@ const theme = createTheme({
     },
 });
 
-const App: React.FC = () => {
+function MyApp({ Component, pageProps }: AppProps) {
     return (
         <CacheProvider value={cacheRtl}>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <QueryClientProvider client={queryClient}>
-                    <BrowserRouter>
-                        <AuthProvider>
-                            <AppRoutes />
-                        </AuthProvider>
-                    </BrowserRouter>
+                    <AuthProvider>
+                        <Component {...pageProps} />
+                    </AuthProvider>
                 </QueryClientProvider>
             </ThemeProvider>
         </CacheProvider>
     );
-};
+}
 
-export default App; 
+export default MyApp; 
