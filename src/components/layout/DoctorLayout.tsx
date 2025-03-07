@@ -12,6 +12,7 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
+  Grid
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -20,9 +21,13 @@ import {
   Receipt as PrescriptionIcon,
   History as HistoryIcon,
   ExitToApp as LogoutIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  MedicalServices as MedicalServicesIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import PersianDateTime from '../common/PersianDateTime';
 
 const drawerWidth = 240;
 
@@ -32,17 +37,9 @@ interface DoctorLayoutProps {
 
 const menuItems = [
   { text: "داشبورد", icon: <DashboardIcon />, path: "/doctor" },
-  {
-    text: "معاینه بیمار",
-    icon: <ExaminationIcon />,
-    path: "/doctor/examination",
-  },
-  {
-    text: "نسخه‌ها",
-    icon: <PrescriptionIcon />,
-    path: "/doctor/prescriptions",
-  },
-  { text: "سوابق بیماران", icon: <HistoryIcon />, path: "/doctor/history" },
+  { text: "نوبت‌های امروز", icon: <EventIcon />, path: "/doctor/today-visits" },
+  { text: "بیماران", icon: <PersonIcon />, path: "/doctor/patients" },
+  { text: "معاینات", icon: <MedicalServicesIcon />, path: "/doctor/examinations" },
 ];
 
 const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
@@ -60,7 +57,7 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          پنل پزشک
+          پنل دکتر
         </Typography>
       </Toolbar>
       <Divider />
@@ -107,10 +104,19 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "پنل پزشک"}
-          </Typography>
+          <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h6" noWrap component="div">
+                {menuItems.find((item) => item.path === location.pathname)?.text ||
+                  "پنل دکتر"}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Box sx={{ color: 'white' }}>
+                <PersianDateTime showFullDate={true} />
+              </Box>
+            </Grid>
+          </Grid>
         </Toolbar>
       </AppBar>
       <Box

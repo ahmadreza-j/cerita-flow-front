@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Drawer,
@@ -13,53 +13,52 @@ import {
   ListItemText,
   useTheme,
   Grid
-} from "@mui/material";
+} from '@mui/material';
 import {
   Menu as MenuIcon,
-  Inventory as InventoryIcon,
-  ShoppingCart as SalesIcon,
-  Assessment as ReportsIcon,
-  ExitToApp as LogoutIcon,
   Dashboard as DashboardIcon,
-  Visibility as VisibilityIcon,
-} from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+  Business as BusinessIcon,
+  SupervisorAccount as SupervisorAccountIcon,
+  Settings as SettingsIcon,
+  ExitToApp as LogoutIcon
+} from '@mui/icons-material';
+import { useRouter } from 'next/router';
+import useAuth from '../../hooks/useAuth';
 import PersianDateTime from '../common/PersianDateTime';
 
 const drawerWidth = 240;
 
-interface OpticianLayoutProps {
+interface SuperAdminLayoutProps {
   children: React.ReactNode;
 }
 
 const menuItems = [
-  { text: "داشبورد", icon: <DashboardIcon />, path: "/optician" },
-  {
-    text: "بیماران نیازمند عینک",
-    icon: <VisibilityIcon />,
-    path: "/optician/glasses-needed",
-  },
-  { text: "ثبت فروش", icon: <SalesIcon />, path: "/optician/sales" },
-  { text: "محصولات", icon: <InventoryIcon />, path: "/optician/products" },
+  { text: 'داشبورد', icon: <DashboardIcon />, path: '/super-admin/dashboard' },
+  { text: 'مدیریت مطب‌ها', icon: <BusinessIcon />, path: '/super-admin/clinics' },
+  { text: 'مدیریت کاربران', icon: <SupervisorAccountIcon />, path: '/super-admin/users' },
+  { text: 'تنظیمات', icon: <SettingsIcon />, path: '/super-admin/settings' }
 ];
 
-const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
+const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push('/super-admin/login');
+  };
+
   const drawer = (
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          پنل عینک‌ساز
+          پنل مدیر ارشد
         </Typography>
       </Toolbar>
       <Divider />
@@ -67,8 +66,8 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
         {menuItems.map((item) => (
           <ListItemButton
             key={item.text}
-            onClick={() => navigate(item.path)}
-            selected={location.pathname === item.path}
+            onClick={() => router.push(item.path)}
+            selected={router.pathname === item.path}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
@@ -77,7 +76,7 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
       </List>
       <Divider />
       <List>
-        <ListItemButton onClick={logout}>
+        <ListItemButton onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -88,12 +87,12 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: 'flex' }}>
       <AppBar
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mr: { sm: `${drawerWidth}px` },
+          mr: { sm: `${drawerWidth}px` }
         }}
       >
         <Toolbar>
@@ -102,15 +101,14 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
+            sx={{ mr: 2, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
           <Grid container alignItems="center" justifyContent="space-between">
             <Grid item>
               <Typography variant="h6" noWrap component="div">
-                {menuItems.find((item) => item.path === location.pathname)?.text ||
-                  "پنل عینک‌ساز"}
+                {menuItems.find(item => item.path === router.pathname)?.text || 'پنل مدیر ارشد'}
               </Typography>
             </Grid>
             <Grid item>
@@ -127,31 +125,31 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth
+            }
           }}
         >
           {drawer}
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
           sx={{
-            display: { xs: "none", sm: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth
+            }
           }}
           open
         >
@@ -163,7 +161,7 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${drawerWidth}px)` }
         }}
       >
         <Toolbar />
@@ -173,4 +171,4 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
   );
 };
 
-export default OpticianLayout;
+export default SuperAdminLayout; 

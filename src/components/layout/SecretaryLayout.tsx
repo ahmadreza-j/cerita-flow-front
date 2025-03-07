@@ -11,7 +11,8 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    useTheme
+    useTheme,
+    Grid
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -23,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import PersianDateTime from '../common/PersianDateTime';
 
 const drawerWidth = 240;
 
@@ -99,9 +101,18 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({ children }) => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
-                        {menuItems.find(item => item.path === location.pathname)?.text || 'پنل منشی'}
-                    </Typography>
+                    <Grid container alignItems="center" justifyContent="space-between">
+                        <Grid item>
+                            <Typography variant="h6" noWrap component="div">
+                                {menuItems.find(item => item.path === location.pathname)?.text || 'پنل منشی'}
+                            </Typography>
+                        </Grid>
+                        <Grid item>
+                            <Box sx={{ color: 'white' }}>
+                                <PersianDateTime showFullDate={true} />
+                            </Box>
+                        </Grid>
+                    </Grid>
                 </Toolbar>
             </AppBar>
             <Box

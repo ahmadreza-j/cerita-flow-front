@@ -1,11 +1,12 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { AuthState, LoginCredentials, RegisterData, User, Role } from "../types/auth";
+import { AuthState, LoginCredentials, ClinicLoginCredentials, SuperAdminLoginCredentials, User, Role, Clinic } from "../types/auth";
 
 interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  loginAsSuperAdmin: (credentials: SuperAdminLoginCredentials) => Promise<void>;
+  loginToClinic: (credentials: ClinicLoginCredentials) => Promise<void>;
   logout: () => void;
+  getClinics: () => Promise<Clinic[]>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,6 +19,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -30,22 +32,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      // For development purposes, simulate a successful response
-      // In production, this would be a real API call
-      // const response = await axios.get("/api/auth/me");
-      // setUser(response.data);
+      // Check if user is a super admin
+      const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
+      const endpoint = isSuperAdmin ? "/api/super-admin/profile" : "/api/auth/profile";
       
-      // Mock user data for development
-      const mockUser: User = {
-        id: "1",
-        username: "test_user",
-        email: "test@example.com",
-        role: Role.ADMIN,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setUser(mockUser);
+      const response = await axios.get(endpoint);
+      setUser(response.data.user);
       setIsAuthenticated(true);
     } catch (error) {
       console.error("Failed to fetch user:", error);
@@ -53,32 +45,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (credentials: LoginCredentials) => {
+  const loginAsSuperAdmin = async (credentials: SuperAdminLoginCredentials) => {
     try {
-      // For development purposes, simulate a successful response
-      // In production, this would be a real API call
-      // const response = await axios.post("/api/auth/login", credentials);
-      // const { token: newToken } = response.data;
-      
-      // Mock token for development
-      const newToken = "mock-jwt-token";
+      const response = await axios.post("/api/super-admin/login", credentials);
+      const { token: newToken, user: userData } = response.data;
       
       setToken(newToken);
+      setUser(userData);
+      setIsAuthenticated(true);
+      
       localStorage.setItem("token", newToken);
+      localStorage.setItem("isSuperAdmin", "true");
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-      await fetchUser();
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Super admin login failed:", error);
       throw error;
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const loginToClinic = async (credentials: ClinicLoginCredentials) => {
     try {
-      await axios.post("/api/auth/register", data);
+      const response = await axios.post("/api/auth/login", credentials);
+      const { token: newToken, user: userData } = response.data;
+      
+      setToken(newToken);
+      setUser(userData);
+      setIsAuthenticated(true);
+      
+      localStorage.setItem("token", newToken);
+      localStorage.setItem("isSuperAdmin", "false");
+      localStorage.setItem("clinicId", credentials.clinicId.toString());
+      localStorage.setItem("clinicName", userData.clinicName || "");
+      
+      axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error("Clinic login failed:", error);
       throw error;
+    }
+  };
+
+  const getClinics = async (): Promise<Clinic[]> => {
+    try {
+      // Only fetch clinics if we're a super admin
+      if (user?.isSuperAdmin) {
+        const response = await axios.get("/api/super-admin/clinics");
+        setClinics(response.data.clinics);
+        return response.data.clinics;
+      }
+      return clinics;
+    } catch (error) {
+      console.error("Failed to fetch clinics:", error);
+      return [];
     }
   };
 
@@ -86,7 +103,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
+    setClinics([]);
+    
     localStorage.removeItem("token");
+    localStorage.removeItem("isSuperAdmin");
+    localStorage.removeItem("clinicId");
+    localStorage.removeItem("clinicName");
+    
     delete axios.defaults.headers.common["Authorization"];
   };
 
@@ -95,11 +118,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user,
       token,
       isAuthenticated,
-      login,
-      register,
+      clinics,
+      loginAsSuperAdmin,
+      loginToClinic,
       logout,
+      getClinics,
     }),
-    [user, token, isAuthenticated]
+    [user, token, isAuthenticated, clinics]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
