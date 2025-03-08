@@ -57,8 +57,8 @@ const ClinicManagerLayout: React.FC<ClinicManagerLayoutProps> = ({
   const drawer = (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          پنل مدیریت مطب
+        <Typography variant="h6" noWrap component="div" fontWeight="bold" align="center">
+          پنل مدیریت کلینیک
         </Typography>
       </Toolbar>
       <Divider />
@@ -105,9 +105,8 @@ const ClinicManagerLayout: React.FC<ClinicManagerLayoutProps> = ({
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "پنل مدیریت مطب"}
+          <Typography variant="h6" noWrap component="div" fontWeight="bold" align="center">
+            پنل مدیریت کلینیک
           </Typography>
         </Toolbar>
       </AppBar>

@@ -13,7 +13,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid
+  Grid,
+  FormHelperText
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -22,9 +23,9 @@ import useAuth from '../src/hooks/useAuth';
 import { ClinicLoginCredentials, Clinic } from '../src/types/auth';
 
 const validationSchema = Yup.object({
-  clinicId: Yup.number().required('انتخاب مطب الزامی است'),
   username: Yup.string().required('نام کاربری الزامی است'),
-  password: Yup.string().required('رمز عبور الزامی است')
+  password: Yup.string().required('رمز عبور الزامی است'),
+  clinicId: Yup.number().required('انتخاب کلینیک الزامی است'),
 });
 
 const ClinicLoginPage: React.FC = () => {
@@ -41,7 +42,7 @@ const ClinicLoginPage: React.FC = () => {
         setClinics(response.data.clinics || []);
       } catch (err) {
         console.error('Failed to fetch clinics:', err);
-        setError('خطا در دریافت لیست مطب‌ها');
+        setError('خطا در دریافت لیست کلینیک‌ها');
       } finally {
         setLoading(false);
       }
@@ -132,7 +133,7 @@ const ClinicLoginPage: React.FC = () => {
             gutterBottom
             sx={{ mb: 3 }}
           >
-            ورود به سیستم مطب
+            ورود به سیستم کلینیک
           </Typography>
 
           {error && (
@@ -142,13 +143,13 @@ const ClinicLoginPage: React.FC = () => {
           )}
 
           {clinics.length === 0 && !loading ? (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              هیچ مطبی یافت نشد. لطفا با مدیر سیستم تماس بگیرید.
-            </Alert>
+            <Typography variant="body1" color="error" align="center">
+              هیچ کلینیکی یافت نشد. لطفا با مدیر سیستم تماس بگیرید.
+            </Typography>
           ) : (
             <form onSubmit={formik.handleSubmit}>
               <FormControl fullWidth margin="normal">
-                <InputLabel id="clinic-select-label">انتخاب مطب</InputLabel>
+                <InputLabel id="clinic-select-label">انتخاب کلینیک</InputLabel>
                 <Select
                   labelId="clinic-select-label"
                   id="clinicId"
@@ -157,10 +158,10 @@ const ClinicLoginPage: React.FC = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   error={formik.touched.clinicId && Boolean(formik.errors.clinicId)}
-                  label="انتخاب مطب"
+                  label="انتخاب کلینیک"
                 >
                   <MenuItem value={0} disabled>
-                    لطفا یک مطب انتخاب کنید
+                    <FormHelperText>لطفا یک کلینیک انتخاب کنید</FormHelperText>
                   </MenuItem>
                   {clinics.map((clinic) => (
                     <MenuItem key={clinic.id} value={clinic.id}>

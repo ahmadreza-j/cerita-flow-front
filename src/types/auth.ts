@@ -1,6 +1,6 @@
 export enum Role {
   ADMIN = "ADMIN", // سوپر ادمین
-  CLINIC_MANAGER = "CLINIC_MANAGER", // مدیر مطب
+  CLINIC_MANAGER = "CLINIC_MANAGER", // مدیر کلینیک
   SECRETARY = "SECRETARY", // منشی
   DOCTOR = "DOCTOR", // دکتر
   OPTICIAN = "OPTICIAN", // عینک‌ساز

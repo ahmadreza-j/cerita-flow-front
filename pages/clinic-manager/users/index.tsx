@@ -105,18 +105,18 @@ const UsersPage: React.FC = () => {
     }
   );
 
-  const getRoleLabel = (role: Role) => {
+  const getRoleTitle = (role: Role) => {
     switch (role) {
       case Role.ADMIN:
-        return 'مدیر';
+        return 'سوپر ادمین';
       case Role.CLINIC_MANAGER:
-        return 'مدیر مطب';
-      case Role.SECRETARY:
-        return 'منشی';
+        return 'مدیر کلینیک';
       case Role.DOCTOR:
         return 'دکتر';
+      case Role.SECRETARY:
+        return 'منشی';
       case Role.OPTICIAN:
-        return 'عینک‌ساز';
+        return 'عینک ساز';
       default:
         return role;
     }
@@ -206,7 +206,7 @@ const UsersPage: React.FC = () => {
             >
               <MenuItem value="">همه</MenuItem>
               <MenuItem value={Role.ADMIN}>مدیر</MenuItem>
-              <MenuItem value={Role.CLINIC_MANAGER}>مدیر مطب</MenuItem>
+              <MenuItem value={Role.CLINIC_MANAGER}>مدیر کلینیک</MenuItem>
               <MenuItem value={Role.SECRETARY}>منشی</MenuItem>
               <MenuItem value={Role.DOCTOR}>دکتر</MenuItem>
               <MenuItem value={Role.OPTICIAN}>عینک‌ساز</MenuItem>
@@ -247,7 +247,7 @@ const UsersPage: React.FC = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Chip
-                        label={getRoleLabel(user.role)}
+                        label={getRoleTitle(user.role)}
                         color={getRoleColor(user.role) as any}
                         size="small"
                       />

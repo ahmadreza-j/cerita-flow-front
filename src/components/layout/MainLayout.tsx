@@ -48,7 +48,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          مطب اپتومتری
+          کلینیک اپتومتری
         </Typography>
       </Toolbar>
       <List>

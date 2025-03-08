@@ -48,7 +48,7 @@ const SuperAdminDashboard: React.FC = () => {
         setClinics(response.data.clinics || []);
       } catch (err) {
         console.error("Failed to fetch clinics:", err);
-        setError("خطا در دریافت اطلاعات مطب‌ها");
+        setError("خطا در دریافت اطلاعات کلینیک‌ها");
       } finally {
         setLoading(false);
       }
@@ -132,7 +132,7 @@ const SuperAdminDashboard: React.FC = () => {
                 }}
               >
                 <Typography variant="h6" component="h2" fontWeight="bold">
-                  مطب‌ها
+                  کلینیک‌ها
                 </Typography>
                 <Avatar sx={{ bgcolor: "primary.main" }}>
                   <BusinessIcon />
@@ -146,7 +146,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {clinics.length}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                تعداد کل مطب‌های ثبت شده در سیستم
+                تعداد کل کلینیک‌های ثبت شده در سیستم
               </Typography>
               <Divider sx={{ my: 2 }} />
               <Box
@@ -162,7 +162,7 @@ const SuperAdminDashboard: React.FC = () => {
                   onClick={() => router.push("/super-admin/clinics/new")}
                   sx={{ borderRadius: 2 }}
                 >
-                  افزودن مطب جدید
+                  افزودن کلینیک جدید
                 </Button>
                 <Button
                   variant="text"
@@ -255,12 +255,12 @@ const SuperAdminDashboard: React.FC = () => {
             gutterBottom
             fontWeight="bold"
           >
-            آخرین مطب‌های ثبت شده
+            آخرین کلینیک‌های ثبت شده
           </Typography>
           <Divider sx={{ mb: 2 }} />
           {clinics.length === 0 ? (
             <Typography variant="body1" color="text.secondary" sx={{ py: 2 }}>
-              هیچ مطبی ثبت نشده است.
+              هیچ کلینیکی ثبت نشده است.
             </Typography>
           ) : (
             <Grid container spacing={3} sx={{ mt: 1 }}>

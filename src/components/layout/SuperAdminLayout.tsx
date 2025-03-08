@@ -8,6 +8,7 @@ import {
   Typography,
   Divider,
   IconButton,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -28,13 +29,15 @@ import {
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
   Notifications as NotificationsIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import useAuth from '../../hooks/useAuth';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import PageLoader from '../common/PageLoader';
+import Link from 'next/link';
 
 // Import PersianDateTime with no SSR to prevent hydration errors
 const PersianDateTime = dynamic(() => import('../common/PersianDateTime'), {
@@ -49,10 +52,26 @@ interface SuperAdminLayoutProps {
 }
 
 const menuItems = [
-  { text: 'داشبورد', icon: <DashboardIcon />, path: '/super-admin/dashboard' },
-  { text: 'مدیریت مطب‌ها', icon: <BusinessIcon />, path: '/super-admin/clinics' },
-  { text: 'مدیریت کاربران', icon: <SupervisorAccountIcon />, path: '/super-admin/users' },
-  { text: 'تنظیمات', icon: <SettingsIcon />, path: '/super-admin/settings' }
+  {
+    text: 'داشبورد',
+    icon: <DashboardIcon />,
+    path: '/super-admin/dashboard'
+  },
+  {
+    text: 'کلینیک‌ها',
+    icon: <BusinessIcon />,
+    path: '/super-admin/clinics'
+  },
+  {
+    text: 'کاربران',
+    icon: <PeopleIcon />,
+    path: '/super-admin/users'
+  },
+  {
+    text: 'تنظیمات',
+    icon: <SettingsIcon />,
+    path: '/super-admin/settings'
+  }
 ];
 
 const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
@@ -173,53 +192,55 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
       <Divider />
       <List sx={{ px: 1 }}>
         {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            onClick={() => router.push(item.path)}
-            selected={router.pathname === item.path}
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              selected={router.pathname === item.path}
+              sx={{ 
+                borderRadius: 2,
+                mb: 1,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.light',
+                  '&:hover': {
+                    backgroundColor: 'primary.light',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'primary.main',
+                  },
+                  '& .MuiListItemText-primary': {
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+        <Divider sx={{ my: 1 }} />
+        <ListItem disablePadding>
+          <ListItemButton 
+            onClick={handleLogout}
             sx={{ 
               borderRadius: 2,
-              mb: 1,
-              '&.Mui-selected': {
-                backgroundColor: 'primary.light',
-                '&:hover': {
-                  backgroundColor: 'primary.light',
-                },
-                '& .MuiListItemIcon-root': {
-                  color: 'primary.main',
-                },
-                '& .MuiListItemText-primary': {
-                  fontWeight: 'bold',
-                  color: 'primary.main',
-                },
+              color: 'error.main',
+              '&:hover': {
+                backgroundColor: 'error.light',
+              },
+              '& .MuiListItemIcon-root': {
+                color: 'error.main',
               },
             }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
+            <ListItemIcon>
+              <LogoutIcon color="error" />
+            </ListItemIcon>
+            <ListItemText primary="خروج" />
           </ListItemButton>
-        ))}
-      </List>
-      <Divider />
-      <List sx={{ px: 1 }}>
-        <ListItemButton 
-          onClick={handleLogout}
-          sx={{ 
-            borderRadius: 2,
-            color: 'error.main',
-            '&:hover': {
-              backgroundColor: 'error.light',
-            },
-            '& .MuiListItemIcon-root': {
-              color: 'error.main',
-            },
-          }}
-        >
-          <ListItemIcon>
-            <LogoutIcon color="error" />
-          </ListItemIcon>
-          <ListItemText primary="خروج" />
-        </ListItemButton>
+        </ListItem>
       </List>
     </div>
   );

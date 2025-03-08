@@ -25,7 +25,7 @@ interface ClinicFormValues {
 }
 
 const validationSchema = Yup.object({
-  name: Yup.string().required('نام مطب الزامی است'),
+  name: Yup.string().required('نام کلینیک الزامی است'),
   address: Yup.string(),
   phone: Yup.string().matches(/^[0-9]{11}$/, 'شماره تلفن باید 11 رقم باشد'),
   managerName: Yup.string(),
@@ -55,14 +55,14 @@ const NewClinicPage: React.FC = () => {
         
         const response = await api.post('/api/super-admin/clinics', values);
         
-        setSuccess('مطب با موفقیت ایجاد شد');
+        setSuccess('کلینیک با موفقیت ایجاد شد');
         
         // Redirect after a short delay
         setTimeout(() => {
           router.push('/super-admin/clinics');
         }, 2000);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'خطا در ایجاد مطب');
+        setError(err.response?.data?.message || 'خطا در ایجاد کلینیک');
       } finally {
         setSubmitting(false);
       }
@@ -73,7 +73,7 @@ const NewClinicPage: React.FC = () => {
     <SuperAdminLayout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          افزودن مطب جدید
+          افزودن کلینیک جدید
         </Typography>
       </Box>
 
@@ -97,7 +97,7 @@ const NewClinicPage: React.FC = () => {
                 fullWidth
                 id="name"
                 name="name"
-                label="نام مطب"
+                label="نام کلینیک"
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
