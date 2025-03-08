@@ -18,7 +18,8 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  SelectChangeEvent
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -28,7 +29,7 @@ import {
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import ClinicManagerLayout from '../../../src/components/layout/ClinicManagerLayout';
 import { Role } from '../../../src/types/auth';
 
@@ -55,7 +56,7 @@ const UsersPage: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('/api/users');
+        const response = await api.get('/api/users');
         setUsers(response.data.users || []);
       } catch (err) {
         console.error('Failed to fetch users:', err);
@@ -72,14 +73,14 @@ const UsersPage: React.FC = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleRoleFilterChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleRoleFilterChange = (event: SelectChangeEvent) => {
     setRoleFilter(event.target.value as string);
   };
 
   const handleDeleteUser = async (userId: number) => {
     if (window.confirm('آیا از حذف این کاربر اطمینان دارید؟')) {
       try {
-        await axios.delete(`/api/users/${userId}`);
+        await api.delete(`/api/users/${userId}`);
         // Update the users list
         setUsers(users.filter(user => user.id !== userId));
       } catch (err) {

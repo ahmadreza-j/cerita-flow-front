@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
+import api from '../src/utils/api';
 import useAuth from '../src/hooks/useAuth';
 import { ClinicLoginCredentials, Clinic } from '../src/types/auth';
 
@@ -37,7 +37,7 @@ const ClinicLoginPage: React.FC = () => {
   useEffect(() => {
     const fetchClinics = async () => {
       try {
-        const response = await axios.get('/api/clinics');
+        const response = await api.get('/api/clinics');
         setClinics(response.data.clinics || []);
       } catch (err) {
         console.error('Failed to fetch clinics:', err);

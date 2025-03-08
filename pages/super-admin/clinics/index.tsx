@@ -24,7 +24,7 @@ import {
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import SuperAdminLayout from '../../../src/components/layout/SuperAdminLayout';
 import { Clinic } from '../../../src/types/auth';
 import { formatPersianDate } from '../../../src/utils/dateUtils';
@@ -39,7 +39,7 @@ const ClinicsPage: React.FC = () => {
   useEffect(() => {
     const fetchClinics = async () => {
       try {
-        const response = await axios.get('/api/super-admin/clinics');
+        const response = await api.get('/api/super-admin/clinics');
         setClinics(response.data.clinics || []);
       } catch (err) {
         console.error('Failed to fetch clinics:', err);

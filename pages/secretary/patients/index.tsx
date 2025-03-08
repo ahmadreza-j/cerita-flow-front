@@ -24,7 +24,7 @@ import {
   EventNote as EventNoteIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import SecretaryLayout from '../../../src/components/layout/SecretaryLayout';
 import { formatPersianDate } from '../../../src/utils/dateUtils';
 
@@ -54,7 +54,7 @@ const PatientsPage: React.FC = () => {
     const fetchRecentPatients = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/patients/recent');
+        const response = await api.get('/api/patients/recent');
         setRecentPatients(response.data.patients || []);
       } catch (err) {
         console.error('Failed to fetch recent patients:', err);
@@ -76,7 +76,7 @@ const PatientsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/patients/search?query=${searchTerm}`);
+      const response = await api.get(`/api/patients/search?query=${searchTerm}`);
       setSearchResults(response.data.patients || []);
       
       if (response.data.patients.length === 0) {
@@ -110,7 +110,7 @@ const PatientsPage: React.FC = () => {
         patientId
       };
       
-      const response = await axios.post('/api/visits', visitData);
+      const response = await api.post('/api/visits', visitData);
       
       // Navigate to the patient file view
       router.push(`/secretary/patients/${patientId}`);

@@ -1,6 +1,6 @@
 import { createStore } from "zustand/vanilla";
 import { useStore } from "zustand";
-import axios from "axios";
+import api, { axios } from "../utils/api";
 import React, { useEffect } from "react";
 import { type Role } from "../types/auth";
 interface User {
@@ -24,6 +24,7 @@ interface AuthState {
     lastName?: string;
     phoneNumber?: string;
   }) => Promise<void>;
+  loginAsSuperAdmin: (credentials: { username: string; password: string }) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -38,8 +39,8 @@ const authStore = createStore<AuthState>((set) => ({
   register: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+      await api.post(
+        `/api/auth/register`,
         data
       );
       set({ isLoading: false });
@@ -55,13 +56,47 @@ const authStore = createStore<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+      const response = await api.post(
+        `/api/auth/login`,
         { email, password }
       );
 
       const { token, user } = response.data;
-      localStorage.setItem("token", token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", token);
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      set({
+        user,
+        token,
+        isLoading: false,
+        error: null,
+        isAuthenticated: true,
+      });
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.error || "خطا در ورود به سیستم",
+        isAuthenticated: false,
+      });
+      throw error;
+    }
+  },
+
+  loginAsSuperAdmin: async (credentials) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(
+        `/api/super-admin/login`,
+        credentials
+      );
+
+      const { token, user } = response.data;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", token);
+        localStorage.setItem("isSuperAdmin", "true");
+      }
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       set({
@@ -82,7 +117,10 @@ const authStore = createStore<AuthState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem("token");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("isSuperAdmin");
+    }
     delete axios.defaults.headers.common["Authorization"];
     set({
       user: null,
@@ -99,32 +137,28 @@ const authStore = createStore<AuthState>((set) => ({
 
 const useAuth = () => useStore(authStore);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Fetch user data
-      axios
-        .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`)
-        .then((response) => {
-          authStore.setState({
-            user: response.data,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-        })
-        .catch(() => {
-          authStore.getState().logout();
+// Initialize auth state on module load
+if (typeof window !== 'undefined') {
+  // Only run this code in the browser environment
+  const token = localStorage.getItem("token");
+  if (token) {
+    // No need to set axios headers here as it's handled by the api interceptor
+    // Fetch user data
+    api
+      .get(`/api/auth/me`)
+      .then((response) => {
+        authStore.setState({
+          user: response.data,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
         });
-    }
-  }, []);
-
-  return <>{children}</>;
-};
+      })
+      .catch(() => {
+        authStore.getState().logout();
+      });
+  }
+}
 
 export default useAuth;

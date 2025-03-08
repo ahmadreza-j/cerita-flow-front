@@ -8,6 +8,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import AuthProvider from '../src/contexts/AuthContext';
+import '../src/hooks/useAuth'; // Import for side effects only to initialize the auth store
 import '../styles/globals.css';
 
 const queryClient = new QueryClient();

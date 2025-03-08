@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import api, { axios } from "../utils/api";
 import {
   AuthState,
   LoginCredentials,
@@ -31,11 +31,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [clinics, setClinics] = useState<Clinic[]>([]);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-      fetchUser();
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+        // Set token in both axios instances
+        axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        fetchUser();
+      }
     }
   }, []);
 
@@ -47,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         ? "/api/super-admin/profile"
         : "/api/auth/profile";
 
-      const response = await axios.get(endpoint);
+      const response = await api.get(endpoint);
       setUser(response.data.user);
       setIsAuthenticated(true);
     } catch (error) {
@@ -58,15 +62,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await axios.post("/api/auth/login", credentials);
+      const response = await api.post("/api/auth/login", credentials);
       const { token: newToken, user: userData } = response.data;
 
       setToken(newToken);
       setUser(userData);
       setIsAuthenticated(true);
 
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("isSuperAdmin", "false");
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", newToken);
+        localStorage.setItem("isSuperAdmin", "false");
+      }
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     } catch (error) {
@@ -77,15 +83,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loginAsSuperAdmin = async (credentials: SuperAdminLoginCredentials) => {
     try {
-      const response = await axios.post("/api/super-admin/login", credentials);
+      const response = await api.post("/api/super-admin/login", credentials);
       const { token: newToken, user: userData } = response.data;
 
       setToken(newToken);
       setUser(userData);
       setIsAuthenticated(true);
 
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("isSuperAdmin", "true");
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", newToken);
+        localStorage.setItem("isSuperAdmin", "true");
+      }
+      
+      // Update the default axios headers for other axios calls
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     } catch (error) {
       console.error("Super admin login failed:", error);
@@ -95,17 +105,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loginToClinic = async (credentials: ClinicLoginCredentials) => {
     try {
-      const response = await axios.post("/api/auth/login", credentials);
+      const response = await api.post("/api/auth/login", credentials);
       const { token: newToken, user: userData } = response.data;
 
       setToken(newToken);
       setUser(userData);
       setIsAuthenticated(true);
 
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("isSuperAdmin", "false");
-      localStorage.setItem("clinicId", credentials.clinicId.toString());
-      localStorage.setItem("clinicName", userData.clinicName || "");
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", newToken);
+        localStorage.setItem("isSuperAdmin", "false");
+        localStorage.setItem("clinicId", credentials.clinicId.toString());
+        localStorage.setItem("clinicName", userData.clinicName || "");
+      }
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     } catch (error) {
@@ -118,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Only fetch clinics if we're a super admin
       if (user?.isSuperAdmin) {
-        const response = await axios.get("/api/super-admin/clinics");
+        const response = await api.get("/api/super-admin/clinics");
         setClinics(response.data.clinics);
         return response.data.clinics;
       }
@@ -135,10 +147,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsAuthenticated(false);
     setClinics([]);
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("isSuperAdmin");
-    localStorage.removeItem("clinicId");
-    localStorage.removeItem("clinicName");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("isSuperAdmin");
+      localStorage.removeItem("clinicId");
+      localStorage.removeItem("clinicName");
+    }
 
     delete axios.defaults.headers.common["Authorization"];
   };

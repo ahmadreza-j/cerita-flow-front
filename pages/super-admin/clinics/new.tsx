@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import SuperAdminLayout from '../../../src/components/layout/SuperAdminLayout';
 
 interface ClinicFormValues {
@@ -53,7 +53,7 @@ const NewClinicPage: React.FC = () => {
         setError(null);
         setSuccess(null);
         
-        const response = await axios.post('/api/super-admin/clinics', values);
+        const response = await api.post('/api/super-admin/clinics', values);
         
         setSuccess('مطب با موفقیت ایجاد شد');
         

@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import SecretaryLayout from '../../../src/components/layout/SecretaryLayout';
 import { getCurrentPersianDate } from '../../../src/utils/dateUtils';
 
@@ -80,7 +80,7 @@ const NewPatientPage: React.FC = () => {
         setSuccess(null);
         
         // First, create the patient
-        const patientResponse = await axios.post('/api/patients', values);
+        const patientResponse = await api.post('/api/patients', values);
         
         // Then, create a visit for the patient
         if (patientResponse.data.id) {
@@ -89,10 +89,10 @@ const NewPatientPage: React.FC = () => {
             chiefComplaint: values.chiefComplaint
           };
           
-          await axios.post('/api/visits', visitData);
+          await api.post('/api/visits', visitData);
           
+          setSuccess('بیمار با موفقیت ثبت شد');
           setFileNumber(patientResponse.data.fileNumber);
-          setSuccess('بیمار با موفقیت ثبت شد و پرونده ایجاد گردید');
         }
       } catch (err: any) {
         if (err.response?.data?.message === 'این کد ملی قبلاً ثبت شده است') {

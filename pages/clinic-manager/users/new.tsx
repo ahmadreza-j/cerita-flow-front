@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
+import api from '../../../src/utils/api';
 import ClinicManagerLayout from '../../../src/components/layout/ClinicManagerLayout';
 import { Role } from '../../../src/types/auth';
 
@@ -79,7 +79,7 @@ const NewUserPage: React.FC = () => {
         // Remove confirmPassword before sending to API
         const { confirmPassword, ...userData } = values;
         
-        const response = await axios.post('/api/users', userData);
+        const response = await api.post('/api/users', userData);
         
         setSuccess('کاربر با موفقیت ایجاد شد');
         
