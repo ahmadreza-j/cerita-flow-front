@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -8,18 +8,22 @@ import {
   CardContent,
   CardHeader,
   Button,
-  CircularProgress
-} from '@mui/material';
+  CircularProgress,
+  Divider,
+  Avatar,
+  Container,
+} from "@mui/material";
 import {
   Business as BusinessIcon,
   SupervisorAccount as SupervisorAccountIcon,
-  Add as AddIcon
-} from '@mui/icons-material';
-import { useRouter } from 'next/router';
-import api from '../../src/utils/api';
-import SuperAdminLayout from '../../src/components/layout/SuperAdminLayout';
-import { Clinic } from '../../src/types/auth';
-import useAuth from '../../src/hooks/useAuth';
+  Add as AddIcon,
+  ArrowForward as ArrowForwardIcon,
+} from "@mui/icons-material";
+import { useRouter } from "next/router";
+import api from "../../src/utils/api";
+import SuperAdminLayout from "../../src/components/layout/SuperAdminLayout";
+import { Clinic } from "../../src/types/auth";
+import useAuth from "../../src/hooks/useAuth";
 
 const SuperAdminDashboard: React.FC = () => {
   const router = useRouter();
@@ -31,11 +35,11 @@ const SuperAdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchClinics = async () => {
       try {
-        const response = await api.get('/api/super-admin/clinics');
+        const response = await api.get("/api/super-admin/clinics");
         setClinics(response.data.clinics || []);
       } catch (err) {
-        console.error('Failed to fetch clinics:', err);
-        setError('خطا در دریافت اطلاعات مطب‌ها');
+        console.error("Failed to fetch clinics:", err);
+        setError("خطا در دریافت اطلاعات مطب‌ها");
       } finally {
         setLoading(false);
       }
@@ -49,10 +53,10 @@ const SuperAdminDashboard: React.FC = () => {
       <SuperAdminLayout>
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '50vh'
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
           }}
         >
           <CircularProgress />
@@ -63,138 +67,263 @@ const SuperAdminDashboard: React.FC = () => {
 
   return (
     <SuperAdminLayout>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          داشبورد مدیر ارشد
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          خوش آمدید، {user?.firstName} {user?.lastName}
-        </Typography>
-      </Box>
-
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%'
-            }}
+      <Container maxWidth="xl">
+        {/* Header Section */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            p: 3,
+            borderRadius: 2,
+            background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+            color: "white",
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            fontWeight="bold"
           >
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2
-              }}
-            >
-              <Typography variant="h6" component="h2">
-                مطب‌ها
-              </Typography>
-              <BusinessIcon color="primary" fontSize="large" />
-            </Box>
-            <Typography variant="h3" component="p" sx={{ mb: 2 }}>
-              {clinics.length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              تعداد کل مطب‌های ثبت شده در سیستم
-            </Typography>
-            <Box sx={{ mt: 'auto' }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => router.push('/super-admin/clinics/new')}
-              >
-                افزودن مطب جدید
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%'
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2
-              }}
-            >
-              <Typography variant="h6" component="h2">
-                مدیران سیستم
-              </Typography>
-              <SupervisorAccountIcon color="primary" fontSize="large" />
-            </Box>
-            <Typography variant="h3" component="p" sx={{ mb: 2 }}>
-              {/* Placeholder for admin count */}
-              {0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              تعداد کل مدیران سیستم
-            </Typography>
-            <Box sx={{ mt: 'auto' }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => router.push('/super-admin/users/new')}
-              >
-                افزودن مدیر جدید
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="h6" component="h2" gutterBottom>
-          آخرین مطب‌های ثبت شده
-        </Typography>
-        {clinics.length === 0 ? (
-          <Typography variant="body1" color="text.secondary" sx={{ py: 2 }}>
-            هیچ مطبی ثبت نشده است.
+            داشبورد مدیر ارشد
           </Typography>
-        ) : (
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            {clinics.slice(0, 3).map((clinic) => (
-              <Grid item xs={12} md={4} key={clinic.id}>
-                <Card>
-                  <CardHeader
-                    title={clinic.name}
-                    subheader={`تاریخ ثبت: ${new Date(clinic.createdAt).toLocaleDateString('fa-IR')}`}
-                  />
-                  <CardContent>
-                    <Typography variant="body2" color="text.secondary">
-                      {clinic.address || 'بدون آدرس'}
-                    </Typography>
-                    <Box sx={{ mt: 2 }}>
-                      <Button
-                        size="small"
-                        onClick={() => router.push(`/super-admin/clinics/${clinic.id}`)}
-                      >
-                        مشاهده جزئیات
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+          <Typography variant="subtitle1">
+            خوش آمدید، {user?.firstName} {user?.lastName}
+          </Typography>
+        </Paper>
+
+        {/* Stats Cards */}
+        <Grid container spacing={4} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6} lg={6}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                borderRadius: 2,
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h6" component="h2" fontWeight="bold">
+                  مطب‌ها
+                </Typography>
+                <Avatar sx={{ bgcolor: "primary.main" }}>
+                  <BusinessIcon />
+                </Avatar>
+              </Box>
+              <Typography
+                variant="h3"
+                component="p"
+                sx={{ mb: 2, fontWeight: "bold", color: "primary.main" }}
+              >
+                {clinics.length}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                تعداد کل مطب‌های ثبت شده در سیستم
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <Box
+                sx={{
+                  mt: "auto",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => router.push("/super-admin/clinics/new")}
+                  sx={{ borderRadius: 2 }}
+                >
+                  افزودن مطب جدید
+                </Button>
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={() => router.push("/super-admin/clinics")}
+                >
+                  مشاهده همه
+                </Button>
+              </Box>
+            </Paper>
           </Grid>
-        )}
-      </Paper>
+
+          <Grid item xs={12} md={6} lg={6}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                borderRadius: 2,
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h6" component="h2" fontWeight="bold">
+                  مدیران سیستم
+                </Typography>
+                <Avatar sx={{ bgcolor: "secondary.main" }}>
+                  <SupervisorAccountIcon />
+                </Avatar>
+              </Box>
+              <Typography
+                variant="h3"
+                component="p"
+                sx={{ mb: 2, fontWeight: "bold", color: "secondary.main" }}
+              >
+                {/* Placeholder for admin count */}
+                {0}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                تعداد کل مدیران سیستم
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <Box
+                sx={{
+                  mt: "auto",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => router.push("/super-admin/users/new")}
+                  color="secondary"
+                  sx={{ borderRadius: 2 }}
+                >
+                  افزودن مدیر جدید
+                </Button>
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={() => router.push("/super-admin/users")}
+                  color="secondary"
+                >
+                  مشاهده همه
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Recent Clinics */}
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+          <Typography
+            variant="h6"
+            component="h2"
+            gutterBottom
+            fontWeight="bold"
+          >
+            آخرین مطب‌های ثبت شده
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          {clinics.length === 0 ? (
+            <Typography variant="body1" color="text.secondary" sx={{ py: 2 }}>
+              هیچ مطبی ثبت نشده است.
+            </Typography>
+          ) : (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {clinics.slice(0, 3).map((clinic) => (
+                <Grid item xs={12} md={4} key={clinic.id}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      borderRadius: 2,
+                      transition: "transform 0.3s, box-shadow 0.3s",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: 6,
+                      },
+                    }}
+                  >
+                    <CardHeader
+                      avatar={
+                        <Avatar sx={{ bgcolor: "primary.main" }}>
+                          <BusinessIcon />
+                        </Avatar>
+                      }
+                      title={clinic.name}
+                      titleTypographyProps={{
+                        fontWeight: "bold",
+                        align: "right",
+                      }}
+                      subheader={`تاریخ ثبت: ${new Date(
+                        clinic.createdAt
+                      ).toLocaleDateString("fa-IR")}`}
+                      subheaderTypographyProps={{ align: "right" }}
+                    />
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {clinic.address || "بدون آدرس"}
+                      </Typography>
+                      {clinic.phone && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mt: 1 }}
+                        >
+                          شماره تماس: {clinic.phone}
+                        </Typography>
+                      )}
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() =>
+                            router.push(`/super-admin/clinics/${clinic.id}`)
+                          }
+                          endIcon={<ArrowForwardIcon />}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          مشاهده جزئیات
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Paper>
+      </Container>
     </SuperAdminLayout>
   );
 };
 
-export default SuperAdminDashboard; 
+export default SuperAdminDashboard;
