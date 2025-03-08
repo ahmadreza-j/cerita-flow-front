@@ -57,37 +57,26 @@ const menuItems = [
 
 const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const theme = useTheme();
   const router = useRouter();
-  const { logout, user, isAuthenticated } = useAuth();
+  const theme = useTheme();
+  const { logout, user, isAuthenticated, loading } = useAuth();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [userLoaded, setUserLoaded] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
-  // Check if user is authenticated and user data is loaded
+  // Handle initial page load
   useEffect(() => {
-    if (isAuthenticated && user) {
-      setUserLoaded(true);
-    }
-  }, [isAuthenticated, user]);
-
-  useEffect(() => {
-    // Set mounted to true when component mounts (client-side only)
     setMounted(true);
-    
-    // Simulate a short delay to ensure styles are applied
     const timer = setTimeout(() => {
-      setLoading(false);
+      setPageLoading(false);
     }, 300);
-    
     return () => clearTimeout(timer);
   }, []);
 
   // Add a router event listener to show loading state during navigation
   useEffect(() => {
-    const handleStart = () => setLoading(true);
-    const handleComplete = () => setLoading(false);
+    const handleStart = () => setPageLoading(true);
+    const handleComplete = () => setPageLoading(false);
 
     router.events.on('routeChangeStart', handleStart);
     router.events.on('routeChangeComplete', handleComplete);
@@ -98,14 +87,48 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
       router.events.off('routeChangeComplete', handleComplete);
       router.events.off('routeChangeError', handleComplete);
     };
-  }, [router]);
+  }, [router.events]);
 
-  // Redirect to login if not authenticated
+  // Check authentication and redirect if necessary
   useEffect(() => {
-    if (mounted && !isAuthenticated && !loading) {
-      router.push('/super-admin/login');
-    }
-  }, [mounted, isAuthenticated, loading, router]);
+    if (!mounted) return;
+
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const isSuperAdmin = localStorage.getItem('isSuperAdmin') === 'true';
+        
+        // If no token or not a super admin, redirect to login
+        if (!token || !isSuperAdmin) {
+          console.log('Redirecting to login: No token or not super admin');
+          router.push('/super-admin/login');
+          return;
+        }
+        
+        // If we have token but not authenticated in the context, let's wait for the auth check
+        if (!isAuthenticated && !pageLoading) {
+          console.log('No authenticated user in context but token exists, waiting...');
+          // Wait a bit more before deciding to redirect
+          setTimeout(() => {
+            if (!isAuthenticated) {
+              console.log('Still not authenticated after waiting, redirecting to login');
+              router.push('/super-admin/login');
+            }
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        router.push('/super-admin/login');
+      }
+    };
+
+    checkAuth();
+  }, [mounted, isAuthenticated, router, pageLoading]);
+
+  // Show loading state while checking authentication
+  if (!mounted || pageLoading) {
+    return <PageLoader />;
+  }
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -141,12 +164,10 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
         <Typography variant="h6" noWrap component="div" fontWeight="bold" align="center">
           پنل مدیر ارشد
         </Typography>
-        {userLoaded ? (
+        {user && (
           <Typography variant="body2" sx={{ mt: 1 }} align="center">
-            {user?.firstName} {user?.lastName}
+            {user.firstName} {user.lastName}
           </Typography>
-        ) : (
-          <Skeleton width={120} height={20} sx={{ mt: 1, bgcolor: 'rgba(255, 255, 255, 0.3)' }} />
         )}
       </Box>
       <Divider />
@@ -217,12 +238,10 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
         `}</style>
       </Head>
       
-      {loading && <PageLoader />}
-      
       <Box 
         sx={{ display: 'flex' }} 
         dir="rtl"
-        className={`app-container ${!loading ? 'loaded' : ''}`}
+        className={`app-container ${!pageLoading ? 'loaded' : ''}`}
       >
         <AppBar
           position="fixed"
@@ -267,13 +286,9 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
                   </Tooltip>
                   <Tooltip title="پروفایل">
                     <IconButton>
-                      {userLoaded ? (
-                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                          {user?.firstName?.charAt(0) || 'A'}
-                        </Avatar>
-                      ) : (
-                        <Skeleton variant="circular" width={32} height={32} />
-                      )}
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                        {user?.firstName?.charAt(0) || 'A'}
+                      </Avatar>
                     </IconButton>
                   </Tooltip>
                 </Box>

@@ -35,11 +35,30 @@ api.interceptors.response.use(
       
       // Handle 401 Unauthorized errors
       if (error.response.status === 401 && typeof window !== 'undefined') {
-        // Clear auth data and redirect to login if needed
-        localStorage.removeItem('token');
-        localStorage.removeItem('isSuperAdmin');
-        localStorage.removeItem('clinicId');
-        localStorage.removeItem('clinicName');
+        const currentPath = window.location.pathname;
+        const isSuperAdmin = localStorage.getItem('isSuperAdmin') === 'true';
+        
+        // Don't redirect if we're already on a login page
+        if (!currentPath.includes('login')) {
+          // Clear auth data only if we're not on a login page
+          localStorage.removeItem('token');
+          localStorage.removeItem('isSuperAdmin');
+          localStorage.removeItem('clinicId');
+          localStorage.removeItem('clinicName');
+          
+          // Determine which login page to redirect to based on the current path and stored user type
+          let redirectPath;
+          if (currentPath.includes('super-admin') || isSuperAdmin) {
+            redirectPath = '/super-admin/login';
+          } else {
+            redirectPath = '/login';
+          }
+          
+          // Only redirect if we're not already on the target page
+          if (currentPath !== redirectPath) {
+            window.location.href = redirectPath;
+          }
+        }
       }
     } else if (error.request) {
       // The request was made but no response was received

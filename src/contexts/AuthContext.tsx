@@ -16,6 +16,7 @@ interface AuthContextType extends AuthState {
   loginToClinic: (credentials: ClinicLoginCredentials) => Promise<void>;
   logout: () => void;
   getClinics: () => Promise<Clinic[]>;
+  loading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -29,34 +30,96 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem("token");
-      if (storedToken) {
-        setToken(storedToken);
-        // Set token in both axios instances
-        axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-        api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-        fetchUser();
+    const initializeAuth = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const storedToken = localStorage.getItem("token");
+          const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
+          
+          if (storedToken) {
+            setToken(storedToken);
+            // Set token in axios instances
+            axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+            api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+            
+            // Try to fetch user data
+            try {
+              const endpoint = isSuperAdmin ? "/api/super-admin/profile" : "/api/auth/profile";
+              const response = await api.get(endpoint);
+              
+              if (response.data && response.data.user) {
+                const userData = {
+                  ...response.data.user,
+                  isSuperAdmin
+                };
+                setUser(userData);
+                setIsAuthenticated(true);
+              }
+            } catch (error: any) {
+              console.error("Error fetching user profile:", error);
+              // Only clear auth data if it's a 401 error
+              if (error.response?.status === 401) {
+                clearAuthData();
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error during auth initialization:", error);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
+    };
+
+    initializeAuth();
   }, []);
 
-  const fetchUser = async () => {
-    try {
-      // Check if user is a super admin
-      const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
-      const endpoint = isSuperAdmin
-        ? "/api/super-admin/profile"
-        : "/api/auth/profile";
+  const clearAuthData = () => {
+    setToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+    setClinics([]);
 
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("isSuperAdmin");
+      localStorage.removeItem("clinicId");
+      localStorage.removeItem("clinicName");
+    }
+
+    delete axios.defaults.headers.common["Authorization"];
+    delete api.defaults.headers.common["Authorization"];
+  };
+
+  const fetchUser = async (isSuperAdmin?: boolean) => {
+    try {
+      if (typeof isSuperAdmin === 'undefined') {
+        isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
+      }
+      
+      const endpoint = isSuperAdmin ? "/api/super-admin/profile" : "/api/auth/profile";
       const response = await api.get(endpoint);
-      setUser(response.data.user);
-      setIsAuthenticated(true);
-    } catch (error) {
+      
+      if (response.data && response.data.user) {
+        const userData = {
+          ...response.data.user,
+          isSuperAdmin
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+        return userData;
+      }
+      
+      throw new Error("Invalid user data received");
+    } catch (error: any) {
       console.error("Failed to fetch user:", error);
-      logout();
+      if (error.response?.status === 401) {
+        clearAuthData();
+      }
+      throw error;
     }
   };
 
@@ -83,22 +146,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loginAsSuperAdmin = async (credentials: SuperAdminLoginCredentials) => {
     try {
+      // Clear any previous auth data first
+      localStorage.removeItem("token");
+      localStorage.removeItem("isSuperAdmin");
+      localStorage.removeItem("clinicId");
+      localStorage.removeItem("clinicName");
+      delete axios.defaults.headers.common["Authorization"];
+      delete api.defaults.headers.common["Authorization"];
+      
+      // Attempt login
       const response = await api.post("/api/super-admin/login", credentials);
-      const { token: newToken, user: userData } = response.data;
+      
+      if (!response.data || !response.data.token) {
+        throw new Error("Invalid response from server");
+      }
+      
+      const { token, user: userData } = response.data;
 
-      setToken(newToken);
-      setUser(userData);
-      setIsAuthenticated(true);
-
+      // Set the token in localStorage first
       if (typeof window !== 'undefined') {
-        localStorage.setItem("token", newToken);
+        localStorage.setItem("token", token);
         localStorage.setItem("isSuperAdmin", "true");
       }
       
-      // Update the default axios headers for other axios calls
-      axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+      // Set token in axios instances
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Update state
+      setToken(token);
+      setUser({ ...userData, isSuperAdmin: true });
+      setIsAuthenticated(true);
+
+      console.log("Super admin login successful, token set:", token.substring(0, 10) + "...");
+      
+      return userData;
     } catch (error) {
       console.error("Super admin login failed:", error);
+      clearAuthData();
       throw error;
     }
   };
@@ -142,19 +227,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
-    setClinics([]);
-
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem("token");
-      localStorage.removeItem("isSuperAdmin");
-      localStorage.removeItem("clinicId");
-      localStorage.removeItem("clinicName");
-    }
-
-    delete axios.defaults.headers.common["Authorization"];
+    clearAuthData();
   };
 
   const value = useMemo(
@@ -163,14 +236,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       token,
       isAuthenticated,
       clinics,
+      loading,
       login,
       loginAsSuperAdmin,
       loginToClinic,
       logout,
       getClinics,
     }),
-    [user, token, isAuthenticated, clinics]
+    [user, token, isAuthenticated, clinics, loading]
   );
+
+  if (loading) {
+    return null; // or return a loading spinner
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
