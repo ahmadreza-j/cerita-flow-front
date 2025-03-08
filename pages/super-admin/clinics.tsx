@@ -117,12 +117,35 @@ const ClinicsPage = () => {
     },
   });
 
+  // Map API clinic data to view model format
+  const mapApiClinicToViewModel = (apiClinic: any): Clinic => {
+    return {
+      id: apiClinic.id?.toString(),
+      name: apiClinic.name || '',
+      englishName: apiClinic.db_name?.replace(/^optometry_/, '') || apiClinic.englishName || '',
+      establishmentYear: apiClinic.establishment_year ? Number(apiClinic.establishment_year) : undefined,
+      address: apiClinic.address || undefined,
+      managerName: apiClinic.manager_name || undefined,
+      phoneNumber: apiClinic.phone || undefined,
+      logo: apiClinic.logo_url || undefined,
+      createdAt: apiClinic.created_at || apiClinic.createdAt || '',
+      updatedAt: apiClinic.updated_at || apiClinic.updatedAt || ''
+    };
+  };
+
   // Fetch clinics from API
   const fetchClinics = async () => {
     try {
       setLoading(true);
       const response = await api.get('/api/super-admin/clinics');
-      setClinics(response.data.clinics || []);
+      
+      // Debug: Log the raw clinic data to see the format of dates
+      console.log('Raw clinic data from API:', response.data.clinics);
+      
+      // Map API data to view model
+      const processedClinics = response.data.clinics?.map(mapApiClinicToViewModel) || [];
+      
+      setClinics(processedClinics);
     } catch (error) {
       console.error('Error fetching clinics:', error);
       setMessage({ type: 'error', text: 'خطا در دریافت لیست کلینیک‌ها' });
@@ -181,10 +204,40 @@ const ClinicsPage = () => {
 
   // Format date to readable format
   const formatDate = (dateString: string) => {
+    // If no date is provided, return placeholder
+    if (!dateString) return '---';
+    
     try {
+      // Handle Unix timestamps (numbers or strings)
+      if (/^\d+$/.test(dateString)) {
+        const timestamp = parseInt(dateString, 10);
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('fa-IR');
+        }
+      }
+      
+      // Try standard date parsing
       const date = new Date(dateString);
-      return date.toLocaleDateString('fa-IR');
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('fa-IR');
+      }
+      
+      // Try MySQL format (YYYY-MM-DD HH:MM:SS)
+      const mysqlMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s\d{2}:\d{2}:\d{2})?$/);
+      if (mysqlMatch) {
+        const [_, year, month, day] = mysqlMatch;
+        const date = new Date(Number(year), Number(month) - 1, Number(day));
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('fa-IR');
+        }
+      }
+      
+      // If all parsing attempts fail
+      console.warn('Failed to parse date:', dateString);
+      return '---';
     } catch (error) {
+      console.error('Date formatting error:', error);
       return '---';
     }
   };
