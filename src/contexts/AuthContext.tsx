@@ -1,8 +1,17 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { AuthState, LoginCredentials, ClinicLoginCredentials, SuperAdminLoginCredentials, User, Role, Clinic } from "../types/auth";
+import {
+  AuthState,
+  LoginCredentials,
+  ClinicLoginCredentials,
+  SuperAdminLoginCredentials,
+  User,
+  Role,
+  Clinic,
+} from "../types/auth";
 
 interface AuthContextType extends AuthState {
+  login: (credentials: LoginCredentials) => Promise<void>;
   loginAsSuperAdmin: (credentials: SuperAdminLoginCredentials) => Promise<void>;
   loginToClinic: (credentials: ClinicLoginCredentials) => Promise<void>;
   logout: () => void;
@@ -34,8 +43,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Check if user is a super admin
       const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
-      const endpoint = isSuperAdmin ? "/api/super-admin/profile" : "/api/auth/profile";
-      
+      const endpoint = isSuperAdmin
+        ? "/api/super-admin/profile"
+        : "/api/auth/profile";
+
       const response = await axios.get(endpoint);
       setUser(response.data.user);
       setIsAuthenticated(true);
@@ -45,15 +56,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const login = async (credentials: LoginCredentials) => {
+    try {
+      const response = await axios.post("/api/auth/login", credentials);
+      const { token: newToken, user: userData } = response.data;
+
+      setToken(newToken);
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      localStorage.setItem("token", newToken);
+      localStorage.setItem("isSuperAdmin", "false");
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
+    }
+  };
+
   const loginAsSuperAdmin = async (credentials: SuperAdminLoginCredentials) => {
     try {
       const response = await axios.post("/api/super-admin/login", credentials);
       const { token: newToken, user: userData } = response.data;
-      
+
       setToken(newToken);
       setUser(userData);
       setIsAuthenticated(true);
-      
+
       localStorage.setItem("token", newToken);
       localStorage.setItem("isSuperAdmin", "true");
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
@@ -67,16 +97,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/login", credentials);
       const { token: newToken, user: userData } = response.data;
-      
+
       setToken(newToken);
       setUser(userData);
       setIsAuthenticated(true);
-      
+
       localStorage.setItem("token", newToken);
       localStorage.setItem("isSuperAdmin", "false");
       localStorage.setItem("clinicId", credentials.clinicId.toString());
       localStorage.setItem("clinicName", userData.clinicName || "");
-      
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     } catch (error) {
       console.error("Clinic login failed:", error);
@@ -104,12 +134,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     setIsAuthenticated(false);
     setClinics([]);
-    
+
     localStorage.removeItem("token");
     localStorage.removeItem("isSuperAdmin");
     localStorage.removeItem("clinicId");
     localStorage.removeItem("clinicName");
-    
+
     delete axios.defaults.headers.common["Authorization"];
   };
 
@@ -119,6 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       token,
       isAuthenticated,
       clinics,
+      login,
       loginAsSuperAdmin,
       loginToClinic,
       logout,
