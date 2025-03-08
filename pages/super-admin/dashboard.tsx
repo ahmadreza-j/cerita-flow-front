@@ -12,6 +12,7 @@ import {
   Divider,
   Avatar,
   Container,
+  Skeleton
 } from "@mui/material";
 import {
   Business as BusinessIcon,
@@ -27,10 +28,18 @@ import useAuth from "../../src/hooks/useAuth";
 
 const SuperAdminDashboard: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
+
+  // Check if user is authenticated and user data is loaded
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setUserLoaded(true);
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     const fetchClinics = async () => {
@@ -87,9 +96,13 @@ const SuperAdminDashboard: React.FC = () => {
           >
             داشبورد مدیر ارشد
           </Typography>
-          <Typography variant="subtitle1">
-            خوش آمدید، {user?.firstName} {user?.lastName}
-          </Typography>
+          {userLoaded ? (
+            <Typography variant="subtitle1">
+              خوش آمدید، {user?.firstName} {user?.lastName}
+            </Typography>
+          ) : (
+            <Skeleton width={200} height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.3)" }} />
+          )}
         </Paper>
 
         {/* Stats Cards */}

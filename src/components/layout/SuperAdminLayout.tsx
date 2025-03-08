@@ -59,10 +59,18 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const theme = useTheme();
   const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout, user, isAuthenticated } = useAuth();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userLoaded, setUserLoaded] = useState(false);
+
+  // Check if user is authenticated and user data is loaded
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setUserLoaded(true);
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     // Set mounted to true when component mounts (client-side only)
@@ -91,6 +99,13 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
       router.events.off('routeChangeError', handleComplete);
     };
   }, [router]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (mounted && !isAuthenticated && !loading) {
+      router.push('/super-admin/login');
+    }
+  }, [mounted, isAuthenticated, loading, router]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -126,10 +141,12 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
         <Typography variant="h6" noWrap component="div" fontWeight="bold" align="center">
           پنل مدیر ارشد
         </Typography>
-        {user && (
+        {userLoaded ? (
           <Typography variant="body2" sx={{ mt: 1 }} align="center">
-            {user.firstName} {user.lastName}
+            {user?.firstName} {user?.lastName}
           </Typography>
+        ) : (
+          <Skeleton width={120} height={20} sx={{ mt: 1, bgcolor: 'rgba(255, 255, 255, 0.3)' }} />
         )}
       </Box>
       <Divider />
@@ -250,9 +267,13 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children }) => {
                   </Tooltip>
                   <Tooltip title="پروفایل">
                     <IconButton>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                        {user?.firstName?.charAt(0) || 'A'}
-                      </Avatar>
+                      {userLoaded ? (
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                          {user?.firstName?.charAt(0) || 'A'}
+                        </Avatar>
+                      ) : (
+                        <Skeleton variant="circular" width={32} height={32} />
+                      )}
                     </IconButton>
                   </Tooltip>
                 </Box>
