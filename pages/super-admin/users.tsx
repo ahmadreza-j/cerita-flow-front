@@ -113,7 +113,8 @@ const UsersPage = () => {
   // Filter users based on selected clinic and view mode
   const filteredUsers = users.filter(user => {
     if (viewMode === 'managers') {
-      return user.role === 'clinic-manager';
+      return user.role === 'clinic-manager' && 
+             (selectedClinic ? user.clinicId === selectedClinic : true);
     } else {
       return user.role !== 'admin' && user.role !== 'clinic-manager' && 
              (selectedClinic ? user.clinicId === selectedClinic : true);
@@ -188,8 +189,29 @@ const UsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/super-admin/users');
-      setUsers(response.data.users || []);
+      
+      let url;
+      
+      // Use different endpoints based on view mode
+      if (viewMode === 'managers') {
+        url = '/api/super-admin/clinic-managers';
+      } else {
+        url = '/api/super-admin/users';
+      }
+      
+      // If clinic filter is active, add clinicId parameter
+      if (selectedClinic) {
+        url += `?clinicId=${selectedClinic}`;
+      }
+      
+      const response = await api.get(url);
+      
+      // Handle different response structures
+      if (viewMode === 'managers') {
+        setUsers(response.data.managers || []);
+      } else {
+        setUsers(response.data.users || []);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       setMessage({ type: 'error', text: 'خطا در دریافت لیست کاربران' });
@@ -213,6 +235,16 @@ const UsersPage = () => {
     fetchUsers();
     fetchClinics();
   }, []);
+
+  // Effect to refetch users when selectedClinic changes
+  useEffect(() => {
+    fetchUsers();
+  }, [selectedClinic]);
+
+  // Additional effect to refetch users when viewMode changes
+  useEffect(() => {
+    fetchUsers();
+  }, [viewMode]);
 
   // Handle opening the add user dialog
   const handleAddUser = () => {
@@ -394,6 +426,8 @@ const UsersPage = () => {
             onChange={(e, newValue) => {
               setViewMode(newValue);
               setSelectedClinic(null);
+              // Refetch users when changing view mode
+              setTimeout(fetchUsers, 0);
             }}
           >
             <Tab value="managers" label="مدیران کلینیک‌ها" />
@@ -401,23 +435,21 @@ const UsersPage = () => {
           </Tabs>
         </Box>
 
-        {viewMode === 'staff' && (
-          <Box sx={{ mb: 3 }}>
-            <Autocomplete
-              options={clinics}
-              getOptionLabel={(option) => option.name}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="فیلتر بر اساس کلینیک"
-                  variant="outlined"
-                />
-              )}
-              onChange={(e, value) => setSelectedClinic(value ? value.id : null)}
-              fullWidth
-            />
-          </Box>
-        )}
+        <Box sx={{ mb: 3 }}>
+          <Autocomplete
+            options={clinics}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="فیلتر بر اساس کلینیک"
+                variant="outlined"
+              />
+            )}
+            onChange={(e, value) => setSelectedClinic(value ? value.id : null)}
+            fullWidth
+          />
+        </Box>
 
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
