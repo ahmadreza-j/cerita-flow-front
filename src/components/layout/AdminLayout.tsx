@@ -30,6 +30,10 @@ import {
   AccountCircle as AccountCircleIcon,
   Notifications as NotificationsIcon,
   Search as SearchIcon,
+  Person as PersonIcon,
+  Event as EventIcon,
+  Inventory as InventoryIcon,
+  Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -145,6 +149,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'داشبورد', icon: <DashboardIcon />, href: '/admin' },
     { text: 'مدیریت کاربران', icon: <PeopleIcon />, href: '/admin/users' },
+    { text: 'مدیریت بیماران', icon: <PersonIcon />, href: '/admin/patients' },
+    { text: 'مدیریت مراجعات', icon: <EventIcon />, href: '/admin/visits' },
+    { text: 'مدیریت محصولات', icon: <InventoryIcon />, href: '/admin/products' },
+    { text: 'گزارش فروش', icon: <ReceiptIcon />, href: '/admin/sales' },
     { text: 'تنظیمات', icon: <SettingsIcon />, href: '/admin/settings' },
   ];
 

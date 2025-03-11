@@ -20,7 +20,7 @@ interface Column {
   label: string;
   minWidth?: number;
   align?: "right" | "left" | "center";
-  format?: (value: any) => string;
+  format?: (value: any, row?: any) => React.ReactNode;
 }
 
 interface DataTableProps {
@@ -126,7 +126,7 @@ const DataTable = ({
                     const value = row[column.id];
                     return (
                       <TableCell key={column.id} align={column.align}>
-                        {column.format ? column.format(value) : value}
+                        {column.format ? column.format(value, row) : value}
                       </TableCell>
                     );
                   })}
