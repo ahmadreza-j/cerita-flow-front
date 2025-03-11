@@ -32,10 +32,10 @@ export default function AdminDashboard() {
     <AdminLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          داشبورد مدیریت
+          داشبورد مدیریت کلینیک سریتا
         </Typography>
         <Typography paragraph>
-          به پنل مدیریت سیستم خوش آمدید.
+          به پنل مدیریت کلینیک بینایی‌سنجی سریتا خوش آمدید.
         </Typography>
       </Container>
     </AdminLayout>

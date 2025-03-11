@@ -28,9 +28,6 @@ export default function Home() {
         case Role.ADMIN:
           router.push('/admin');
           break;
-        case Role.CLINIC_MANAGER:
-          router.push('/clinic-manager');
-          break;
         default:
           router.push('/login');
       }

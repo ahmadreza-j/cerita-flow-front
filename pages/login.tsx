@@ -120,10 +120,10 @@ export default function Login() {
                 fontWeight="bold"
                 gutterBottom
               >
-                سیستم مدیریت کلینیک
+                سیستم مدیریت کلینیک سریتا
               </Typography>
               <Typography variant="h6">
-                مدیریت هوشمند و یکپارچه خدمات پزشکی
+                مدیریت هوشمند و یکپارچه خدمات بینایی‌سنجی
               </Typography>
             </Box>
 
