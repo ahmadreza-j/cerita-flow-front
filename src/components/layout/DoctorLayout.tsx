@@ -127,7 +127,7 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -145,7 +145,7 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           sx={{
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
