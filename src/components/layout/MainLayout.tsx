@@ -48,7 +48,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          مطب اپتومتری
+          کلینیک اپتومتری
         </Typography>
       </Toolbar>
       <List>
@@ -108,7 +108,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -126,7 +126,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           sx={{
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {

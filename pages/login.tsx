@@ -1,5 +1,12 @@
 import React from "react";
-import { Container, Box, Paper, Link, Typography, useTheme } from "@mui/material";
+import {
+  Container,
+  Box,
+  Paper,
+  Link,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import useAuth from "../src/hooks/useAuth";
@@ -11,7 +18,10 @@ export default function Login() {
   const router = useRouter();
   const theme = useTheme();
 
-  const handleLogin = async (values: { email: string; password: string }) => {
+  const handleLogin = async (values: {
+    username: string;
+    password: string;
+  }) => {
     try {
       await login(values);
       router.push("/");
@@ -68,28 +78,10 @@ export default function Login() {
             >
               لطفاً برای ورود به سیستم، اطلاعات خود را وارد کنید
             </Typography>
-            
+
             <LoginForm onSubmit={handleLogin} />
-            
-            <Box sx={{ mt: 3, textAlign: "center" }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                حساب کاربری ندارید؟
-              </Typography>
-              <Link
-                component={NextLink}
-                href="/register"
-                variant="body2"
-                sx={{
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                ثبت‌نام کنید
-              </Link>
-            </Box>
           </Box>
-          
+
           {/* Right side - Image or Decoration */}
           <Box
             sx={{
@@ -104,14 +96,19 @@ export default function Login() {
             }}
           >
             <Box sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-              <Typography variant="h3" component="div" fontWeight="bold" gutterBottom>
-                سیستم مدیریت کلینیک
+              <Typography
+                variant="h3"
+                component="div"
+                fontWeight="bold"
+                gutterBottom
+              >
+                سیستم مدیریت کلینیک سریتا
               </Typography>
               <Typography variant="h6">
-                مدیریت هوشمند و یکپارچه خدمات پزشکی
+                مدیریت هوشمند و یکپارچه خدمات بینایی‌سنجی
               </Typography>
             </Box>
-            
+
             {/* Background pattern */}
             <Box
               sx={{
@@ -121,7 +118,8 @@ export default function Login() {
                 right: 0,
                 bottom: 0,
                 opacity: 0.1,
-                background: "radial-gradient(circle, rgba(255,255,255,0.3) 2px, transparent 2px)",
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.3) 2px, transparent 2px)",
                 backgroundSize: "20px 20px",
               }}
             />
@@ -130,4 +128,4 @@ export default function Login() {
       </Container>
     </Box>
   );
-} 
+}

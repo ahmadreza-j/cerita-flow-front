@@ -1,11 +1,17 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
-import axios from "axios";
-import { AuthState, LoginCredentials, RegisterData, User, Role } from "../types/auth";
+import api, { axios } from "../utils/api";
+import {
+  AuthState,
+  LoginCredentials,
+  RegisterData,
+  User,
+  Role,
+} from "../types/auth";
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,76 +24,102 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-      fetchUser();
-    }
+    const initializeAuth = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const storedToken = localStorage.getItem("token");
+          
+          if (storedToken) {
+            setToken(storedToken);
+            // Set token in axios instances
+            axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+            api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+            
+            // Try to fetch user data
+            try {
+              const response = await api.get("/api/auth/profile");
+              
+              if (response.data && response.data.user) {
+                setUser(response.data.user);
+                setIsAuthenticated(true);
+              }
+            } catch (error: any) {
+              console.error("Error fetching user profile:", error);
+              // Only clear auth data if it's a 401 error
+              if (error.response?.status === 401) {
+                clearAuthData();
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error during auth initialization:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
   }, []);
+
+  const clearAuthData = () => {
+    setToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+    }
+
+    delete axios.defaults.headers.common["Authorization"];
+    delete api.defaults.headers.common["Authorization"];
+  };
 
   const fetchUser = async () => {
     try {
-      // For development purposes, simulate a successful response
-      // In production, this would be a real API call
-      // const response = await axios.get("/api/auth/me");
-      // setUser(response.data);
+      const response = await api.get("/api/auth/profile");
       
-      // Mock user data for development
-      const mockUser: User = {
-        id: "1",
-        username: "test_user",
-        email: "test@example.com",
-        role: Role.ADMIN,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      if (response.data && response.data.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+        return response.data.user;
+      }
       
-      setUser(mockUser);
-      setIsAuthenticated(true);
-    } catch (error) {
+      throw new Error("Invalid user data received");
+    } catch (error: any) {
       console.error("Failed to fetch user:", error);
-      logout();
+      if (error.response?.status === 401) {
+        clearAuthData();
+      }
+      throw error;
     }
   };
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      // For development purposes, simulate a successful response
-      // In production, this would be a real API call
-      // const response = await axios.post("/api/auth/login", credentials);
-      // const { token: newToken } = response.data;
-      
-      // Mock token for development
-      const newToken = "mock-jwt-token";
-      
+      const response = await api.post("/api/auth/login", credentials);
+      const { token: newToken, user: userData } = response.data;
+
       setToken(newToken);
-      localStorage.setItem("token", newToken);
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("token", newToken);
+      }
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-      await fetchUser();
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
     }
   };
 
-  const register = async (data: RegisterData) => {
-    try {
-      await axios.post("/api/auth/register", data);
-    } catch (error) {
-      console.error("Registration failed:", error);
-      throw error;
-    }
-  };
-
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem("token");
-    delete axios.defaults.headers.common["Authorization"];
+    clearAuthData();
   };
 
   const value = useMemo(
@@ -95,12 +127,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user,
       token,
       isAuthenticated,
+      loading,
       login,
-      register,
       logout,
     }),
-    [user, token, isAuthenticated]
+    [user, token, isAuthenticated, loading]
   );
+
+  if (loading) {
+    return null; // or return a loading spinner
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

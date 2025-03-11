@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Drawer,
@@ -12,6 +12,7 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
+  Grid
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -20,9 +21,13 @@ import {
   Receipt as PrescriptionIcon,
   History as HistoryIcon,
   ExitToApp as LogoutIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  MedicalServices as MedicalServicesIcon,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter } from "next/router";
 import useAuth from "../../hooks/useAuth";
+import Link from "next/link";
 
 const drawerWidth = 240;
 
@@ -32,24 +37,15 @@ interface DoctorLayoutProps {
 
 const menuItems = [
   { text: "داشبورد", icon: <DashboardIcon />, path: "/doctor" },
-  {
-    text: "معاینه بیمار",
-    icon: <ExaminationIcon />,
-    path: "/doctor/examination",
-  },
-  {
-    text: "نسخه‌ها",
-    icon: <PrescriptionIcon />,
-    path: "/doctor/prescriptions",
-  },
-  { text: "سوابق بیماران", icon: <HistoryIcon />, path: "/doctor/history" },
+  { text: "نوبت‌های امروز", icon: <EventIcon />, path: "/doctor/today-visits" },
+  { text: "بیماران", icon: <PersonIcon />, path: "/doctor/patients" },
+  { text: "معاینات", icon: <MedicalServicesIcon />, path: "/doctor/examinations" },
 ];
 
 const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
 
   const handleDrawerToggle = () => {
@@ -60,25 +56,28 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          پنل پزشک
+          پنل دکتر
         </Typography>
       </Toolbar>
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            onClick={() => navigate(item.path)}
-            selected={location.pathname === item.path}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
+          <Link href={item.path} passHref key={item.text}>
+            <ListItemButton
+              selected={router.pathname === item.path}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </Link>
         ))}
       </List>
       <Divider />
       <List>
-        <ListItemButton onClick={logout}>
+        <ListItemButton onClick={() => {
+          logout();
+          router.push('/login');
+        }}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -107,10 +106,19 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "پنل پزشک"}
-          </Typography>
+          <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h6" noWrap component="div">
+                {menuItems.find((item) => item.path === router.pathname)?.text ||
+                  "پنل دکتر"}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Box sx={{ color: 'white' }}>
+                {new Date().toLocaleDateString('fa-IR')}
+              </Box>
+            </Grid>
+          </Grid>
         </Toolbar>
       </AppBar>
       <Box
@@ -119,7 +127,7 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -137,7 +145,7 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           sx={{
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {

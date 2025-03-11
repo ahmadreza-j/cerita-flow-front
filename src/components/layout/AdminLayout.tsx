@@ -30,6 +30,10 @@ import {
   AccountCircle as AccountCircleIcon,
   Notifications as NotificationsIcon,
   Search as SearchIcon,
+  Person as PersonIcon,
+  Event as EventIcon,
+  Inventory as InventoryIcon,
+  Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -89,13 +93,13 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginRight: -drawerWidth,
+  marginLeft: -drawerWidth,
   ...(open && {
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginRight: 0,
+    marginLeft: 0,
   }),
   backgroundColor: theme.palette.background.default,
   minHeight: '100vh',
@@ -145,20 +149,40 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'داشبورد', icon: <DashboardIcon />, href: '/admin' },
     { text: 'مدیریت کاربران', icon: <PeopleIcon />, href: '/admin/users' },
+    { text: 'مدیریت بیماران', icon: <PersonIcon />, href: '/admin/patients' },
+    { text: 'مدیریت مراجعات', icon: <EventIcon />, href: '/admin/visits' },
+    { text: 'مدیریت محصولات', icon: <InventoryIcon />, href: '/admin/products' },
+    { text: 'گزارش فروش', icon: <ReceiptIcon />, href: '/admin/sales' },
     { text: 'تنظیمات', icon: <SettingsIcon />, href: '/admin/settings' },
   ];
 
   return (
-    <Box sx={{ display: 'flex', direction: 'rtl' }}>
+    <Box sx={{ display: 'flex' }}>
       <StyledAppBar 
         position="fixed" 
         sx={{ 
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backgroundColor: 'white',
           color: 'text.primary',
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
         }}
       >
         <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ 
+              ...(open && { display: 'none' }),
+              mr: 1,
+              display: { sm: 'none' }
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
           <Typography 
             variant="h6" 
             noWrap 
@@ -178,7 +202,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="جستجو..."
-              inputProps={{ 'aria-label': 'search' }}
+              aria-label="search"
             />
           </Search>
           
@@ -266,19 +290,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <MenuItem onClick={handleLogout}>خروج</MenuItem>
             </Menu>
           </Box>
-          
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="end"
-            onClick={handleDrawerToggle}
-            sx={{ 
-              ...(open && { display: 'none' }),
-              ml: 1,
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
         </Toolbar>
       </StyledAppBar>
       
@@ -289,12 +300,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            borderLeft: 'none',
+            borderRight: 'none',
             boxShadow: '0 10px 30px 0 rgba(0,0,0,0.1)',
           },
         }}
         variant="persistent"
-        anchor="right"
+        anchor="left"
         open={open}
       >
         <Toolbar />

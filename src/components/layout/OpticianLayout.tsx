@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Drawer,
@@ -12,6 +12,7 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
+  Grid
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -20,9 +21,11 @@ import {
   Assessment as ReportsIcon,
   ExitToApp as LogoutIcon,
   Dashboard as DashboardIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter } from "next/router";
 import useAuth from "../../hooks/useAuth";
+import Link from "next/link";
 
 const drawerWidth = 240;
 
@@ -33,19 +36,18 @@ interface OpticianLayoutProps {
 const menuItems = [
   { text: "داشبورد", icon: <DashboardIcon />, path: "/optician" },
   {
-    text: "مدیریت محصولات",
-    icon: <InventoryIcon />,
-    path: "/optician/products",
+    text: "بیماران نیازمند عینک",
+    icon: <VisibilityIcon />,
+    path: "/optician/glasses-needed",
   },
   { text: "ثبت فروش", icon: <SalesIcon />, path: "/optician/sales" },
-  { text: "گزارش‌ها", icon: <ReportsIcon />, path: "/optician/reports" },
+  { text: "محصولات", icon: <InventoryIcon />, path: "/optician/products" },
 ];
 
 const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
 
   const handleDrawerToggle = () => {
@@ -62,19 +64,22 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            onClick={() => navigate(item.path)}
-            selected={location.pathname === item.path}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
+          <Link href={item.path} passHref key={item.text}>
+            <ListItemButton
+              selected={router.pathname === item.path}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </Link>
         ))}
       </List>
       <Divider />
       <List>
-        <ListItemButton onClick={logout}>
+        <ListItemButton onClick={() => {
+          logout();
+          router.push('/login');
+        }}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -103,10 +108,19 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "پنل عینک‌ساز"}
-          </Typography>
+          <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h6" noWrap component="div">
+                {menuItems.find((item) => item.path === router.pathname)?.text ||
+                  "پنل عینک‌ساز"}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Box sx={{ color: 'white' }}>
+                {new Date().toLocaleDateString('fa-IR')}
+              </Box>
+            </Grid>
+          </Grid>
         </Toolbar>
       </AppBar>
       <Box
@@ -115,7 +129,7 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
       >
         <Drawer
           variant="temporary"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -133,7 +147,7 @@ const OpticianLayout: React.FC<OpticianLayoutProps> = ({ children }) => {
         </Drawer>
         <Drawer
           variant="permanent"
-          anchor={theme.direction === "rtl" ? "right" : "left"}
+          anchor="left"
           sx={{
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
