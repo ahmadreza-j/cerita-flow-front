@@ -80,24 +80,6 @@ export default function Login() {
             </Typography>
 
             <LoginForm onSubmit={handleLogin} />
-
-            <Box sx={{ mt: 3, textAlign: "center" }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                حساب کاربری ندارید؟
-              </Typography>
-              <Link
-                component={NextLink}
-                href="/register"
-                variant="body2"
-                sx={{
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                ثبت‌نام کنید
-              </Link>
-            </Box>
           </Box>
 
           {/* Right side - Image or Decoration */}
