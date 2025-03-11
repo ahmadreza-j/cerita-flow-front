@@ -178,7 +178,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="جستجو..."
-              inputProps={{ 'aria-label': 'search' }}
+              aria-label="search"
             />
           </Search>
           

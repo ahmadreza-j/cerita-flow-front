@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Drawer,
@@ -25,9 +25,9 @@ import {
   Person as PersonIcon,
   MedicalServices as MedicalServicesIcon,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter } from "next/router";
 import useAuth from "../../hooks/useAuth";
-import PersianDateTime from '../common/PersianDateTime';
+import Link from "next/link";
 
 const drawerWidth = 240;
 
@@ -43,10 +43,9 @@ const menuItems = [
 ];
 
 const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
 
   const handleDrawerToggle = () => {
@@ -63,19 +62,22 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            onClick={() => navigate(item.path)}
-            selected={location.pathname === item.path}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
+          <Link href={item.path} passHref key={item.text}>
+            <ListItemButton
+              selected={router.pathname === item.path}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </Link>
         ))}
       </List>
       <Divider />
       <List>
-        <ListItemButton onClick={logout}>
+        <ListItemButton onClick={() => {
+          logout();
+          router.push('/login');
+        }}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -107,13 +109,13 @@ const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
           <Grid container alignItems="center" justifyContent="space-between">
             <Grid item>
               <Typography variant="h6" noWrap component="div">
-                {menuItems.find((item) => item.path === location.pathname)?.text ||
+                {menuItems.find((item) => item.path === router.pathname)?.text ||
                   "پنل دکتر"}
               </Typography>
             </Grid>
             <Grid item>
               <Box sx={{ color: 'white' }}>
-                <PersianDateTime showFullDate={true} />
+                {new Date().toLocaleDateString('fa-IR')}
               </Box>
             </Grid>
           </Grid>
