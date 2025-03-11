@@ -85,22 +85,22 @@ export default function AdminDashboard() {
           const statsData = statsResponse.data;
           
           setStats({
-            totalPatients: statsData.totalPatients,
-            totalVisits: statsData.totalVisits,
-            totalProducts: statsData.totalProducts,
-            totalSales: statsData.totalSales,
-            todayVisits: statsData.todayVisits,
-            todaySales: statsData.todaySales
+            totalPatients: statsData?.totalPatients || 0,
+            totalVisits: statsData?.totalVisits || 0,
+            totalProducts: statsData?.totalProducts || 0,
+            totalSales: statsData?.totalSales || 0,
+            todayVisits: statsData?.todayVisits || 0,
+            todaySales: statsData?.todaySales || 0
           });
           
           // دریافت ویزیت‌های امروز از API
           const today = new Date().toISOString().split('T')[0];
           const visitsResponse = await api.get(`/api/visits/clinic?startDate=${today}&endDate=${today}`);
           
-          const visitsData = visitsResponse.data.map((visit: any) => ({
+          const visitsData = (visitsResponse.data.visits || []).map((visit: any) => ({
             id: visit.id,
             patientName: `${visit.patient_first_name} ${visit.patient_last_name}`,
-            time: visit.appointment_time,
+            time: visit.visitTime,
             doctorName: `${visit.doctor_first_name} ${visit.doctor_last_name}`,
             status: visit.status
           }));
