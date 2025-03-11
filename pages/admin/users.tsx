@@ -62,7 +62,18 @@ export default function UserManagement() {
         try {
           setLoading(true);
           const response = await api.get('/api/users');
-          setUsers(response.data.users || []);
+          // Transform the API response to match our User interface
+          const transformedUsers = (response.data.users || []).map(apiUser => ({
+            id: apiUser.id.toString(),
+            username: apiUser.username,
+            email: apiUser.email,
+            firstName: apiUser.first_name,
+            lastName: apiUser.last_name,
+            phoneNumber: apiUser.phone_number || '',
+            role: apiUser.role,
+            createdAt: apiUser.created_at
+          }));
+          setUsers(transformedUsers);
         } catch (error) {
           console.error('Error fetching users:', error);
         } finally {
@@ -108,12 +119,34 @@ export default function UserManagement() {
       if (editingUser) {
         // ویرایش کاربر موجود
         const response = await api.put(`/api/users/${editingUser.id}`, values);
-        const updatedUser = response.data;
-        setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+        // Refresh the user list after update
+        const updatedResponse = await api.get('/api/users');
+        // Transform the API response to match our User interface
+        const transformedUsers = (updatedResponse.data.users || []).map(apiUser => ({
+          id: apiUser.id.toString(),
+          username: apiUser.username,
+          email: apiUser.email,
+          firstName: apiUser.first_name,
+          lastName: apiUser.last_name,
+          phoneNumber: apiUser.phone_number || '',
+          role: apiUser.role,
+          createdAt: apiUser.created_at
+        }));
+        setUsers(transformedUsers);
       } else {
         // افزودن کاربر جدید
         const response = await api.post('/api/users', values);
-        const newUser = response.data;
+        // تبدیل داده‌های دریافتی به فرمت مورد نیاز برای نمایش در جدول
+        const newUser = {
+          id: response.data.id.toString(),
+          username: response.data.username,
+          email: response.data.email,
+          firstName: response.data.firstName || response.data.first_name || '',
+          lastName: response.data.lastName || response.data.last_name || '',
+          phoneNumber: response.data.phoneNumber || response.data.phone_number || '',
+          role: response.data.role,
+          createdAt: response.data.createdAt || response.data.created_at
+        };
         setUsers([...users, newUser]);
       }
       setOpenDialog(false);
