@@ -142,7 +142,7 @@ const RegisterForm = ({ onSubmit, initialValues, includeRole = false }: Register
 
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="نام کاربری"
@@ -151,10 +151,45 @@ const RegisterForm = ({ onSubmit, initialValues, includeRole = false }: Register
               onChange={formik.handleChange}
               error={formik.touched.username && Boolean(formik.errors.username)}
               helperText={formik.touched.username && formik.errors.username}
+              autoComplete="off"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <PersonIcon color="primary" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={textFieldSx}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={isEditMode ? "رمز عبور جدید (اختیاری)" : "رمز عبور"}
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+              autoComplete="off"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon color="primary" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      edge="end"
+                      color="primary"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
@@ -236,39 +271,6 @@ const RegisterForm = ({ onSubmit, initialValues, includeRole = false }: Register
                 startAdornment: (
                   <InputAdornment position="start">
                     <PhoneIcon color="primary" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={textFieldSx}
-            />
-          </Grid>
-          
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label={isEditMode ? "رمز عبور جدید (اختیاری)" : "رمز عبور"}
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon color="primary" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                      color="primary"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
                   </InputAdornment>
                 ),
               }}

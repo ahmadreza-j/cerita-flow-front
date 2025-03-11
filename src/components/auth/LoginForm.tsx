@@ -87,6 +87,7 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
         onBlur={formik.handleBlur}
         error={formik.touched.username && Boolean(formik.errors.username)}
         helperText={formik.touched.username && formik.errors.username}
+        autoComplete="off"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -109,6 +110,7 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
         onBlur={formik.handleBlur}
         error={formik.touched.password && Boolean(formik.errors.password)}
         helperText={formik.touched.password && formik.errors.password}
+        autoComplete="off"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
