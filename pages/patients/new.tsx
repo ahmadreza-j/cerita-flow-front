@@ -91,15 +91,15 @@ export default function NewPatient() {
         
         // Prepare data for API
         const patientData = {
-          nationalId: values.nationalId,
-          firstName: values.firstName,
-          lastName: values.lastName,
+          national_id: values.nationalId,
+          first_name: values.firstName,
+          last_name: values.lastName,
           age: values.age || null,
           gender: values.gender || null,
           occupation: values.occupation || null,
           address: values.address || null,
           phone: values.phone || null,
-          referralSource: values.referralSource || null
+          referral_source: values.referralSource || null
         };
         
         // Create the patient
