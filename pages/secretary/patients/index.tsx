@@ -55,7 +55,21 @@ const PatientsPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await api.get('/api/patients/recent?limit=10');
-        setRecentPatients(response.data.patients || []);
+        
+        // Map the database field names to the frontend interface field names
+        const formattedPatients = (response.data.patients || []).map((patient: any) => ({
+          id: patient.id,
+          fileNumber: patient.file_number,
+          nationalId: patient.national_id,
+          firstName: patient.first_name,
+          lastName: patient.last_name,
+          age: patient.age,
+          gender: patient.gender,
+          phone: patient.phone,
+          registrationDate: patient.registration_date || 'نامشخص'
+        }));
+        
+        setRecentPatients(formattedPatients);
       } catch (err) {
         console.error('Failed to fetch recent patients:', err);
         setError('خطا در دریافت اطلاعات بیماران اخیر');
@@ -77,7 +91,21 @@ const PatientsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await api.get(`/api/patients/search?query=${searchTerm}`);
-      setSearchResults(response.data.patients || []);
+      
+      // Map the database field names to the frontend interface field names
+      const formattedPatients = (response.data.patients || []).map((patient: any) => ({
+        id: patient.id,
+        fileNumber: patient.file_number,
+        nationalId: patient.national_id,
+        firstName: patient.first_name,
+        lastName: patient.last_name,
+        age: patient.age,
+        gender: patient.gender,
+        phone: patient.phone,
+        registrationDate: patient.registration_date || 'نامشخص'
+      }));
+      
+      setSearchResults(formattedPatients);
       
       if (response.data.patients.length === 0) {
         setError('هیچ بیماری با این مشخصات یافت نشد');
@@ -121,12 +149,20 @@ const PatientsPage: React.FC = () => {
   };
 
   const getGenderLabel = (gender?: string) => {
-    switch (gender) {
+    if (!gender) return 'نامشخص';
+    
+    switch (gender.toLowerCase()) {
       case 'male':
+      case 'مرد':
+      case 'm':
         return 'مرد';
       case 'female':
+      case 'زن':
+      case 'f':
         return 'زن';
       case 'other':
+      case 'سایر':
+      case 'o':
         return 'سایر';
       default:
         return 'نامشخص';
@@ -216,7 +252,7 @@ const PatientsPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => router.push('/patients/new')}
+            onClick={() => router.push('/secretary/patients/new')}
           >
             ثبت بیمار جدید
           </Button>
