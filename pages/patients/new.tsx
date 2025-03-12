@@ -34,9 +34,7 @@ interface PatientFormValues {
   occupation: string;
   address: string;
   phone: string;
-  email: string;
   referralSource: string;
-  chiefComplaint?: string;
 }
 
 const validationSchema = Yup.object({
@@ -47,13 +45,11 @@ const validationSchema = Yup.object({
   lastName: Yup.string().required('نام خانوادگی الزامی است'),
   age: Yup.number()
     .typeError('سن باید عدد باشد')
-    .min(0, 'سن نمی‌تواند منفی باشد')
-    .required('سن الزامی است'),
-  gender: Yup.string().required('جنسیت الزامی است'),
+    .min(0, 'سن نمی‌تواند منفی باشد'),
+  gender: Yup.string(),
   occupation: Yup.string(),
   address: Yup.string(),
   phone: Yup.string().matches(/^[0-9]{11}$/, 'شماره تلفن باید 11 رقم باشد'),
-  email: Yup.string().email('ایمیل نامعتبر است'),
   referralSource: Yup.string()
 });
 
@@ -85,9 +81,7 @@ export default function NewPatient() {
       occupation: '',
       address: '',
       phone: '',
-      email: '',
       referralSource: '',
-      chiefComplaint: ''
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -95,18 +89,23 @@ export default function NewPatient() {
         setError(null);
         setSuccess(null);
         
-        // First, create the patient
-        const patientResponse = await api.post('/api/patients', values);
+        // Prepare data for API
+        const patientData = {
+          nationalId: values.nationalId,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          age: values.age || null,
+          gender: values.gender || null,
+          occupation: values.occupation || null,
+          address: values.address || null,
+          phone: values.phone || null,
+          referralSource: values.referralSource || null
+        };
         
-        // Then, create a visit for the patient
+        // Create the patient
+        const patientResponse = await api.post('/api/patients', patientData);
+        
         if (patientResponse.data.id) {
-          const visitData = {
-            patientId: patientResponse.data.id,
-            chiefComplaint: values.chiefComplaint
-          };
-          
-          await api.post('/api/visits', visitData);
-          
           setSuccess('بیمار با موفقیت ثبت شد');
           setFileNumber(patientResponse.data.fileNumber);
         }
@@ -200,6 +199,11 @@ export default function NewPatient() {
                   error={formik.touched.nationalId && Boolean(formik.errors.nationalId)}
                   helperText={formik.touched.nationalId && formik.errors.nationalId}
                   required
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
+                  inputProps={{ maxLength: 10 }}
                 />
               </Grid>
 
@@ -215,6 +219,10 @@ export default function NewPatient() {
                   error={formik.touched.firstName && Boolean(formik.errors.firstName)}
                   helperText={formik.touched.firstName && formik.errors.firstName}
                   required
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 />
               </Grid>
 
@@ -230,6 +238,10 @@ export default function NewPatient() {
                   error={formik.touched.lastName && Boolean(formik.errors.lastName)}
                   helperText={formik.touched.lastName && formik.errors.lastName}
                   required
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 />
               </Grid>
 
@@ -245,7 +257,11 @@ export default function NewPatient() {
                   onBlur={formik.handleBlur}
                   error={formik.touched.age && Boolean(formik.errors.age)}
                   helperText={formik.touched.age && formik.errors.age}
-                  required
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
+                  inputProps={{ min: 0, max: 120 }}
                 />
               </Grid>
 
@@ -253,7 +269,10 @@ export default function NewPatient() {
                 <FormControl 
                   fullWidth
                   error={formik.touched.gender && Boolean(formik.errors.gender)}
-                  required
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 >
                   <InputLabel id="gender-label">جنسیت</InputLabel>
                   <Select
@@ -286,6 +305,10 @@ export default function NewPatient() {
                   onBlur={formik.handleBlur}
                   error={formik.touched.occupation && Boolean(formik.errors.occupation)}
                   helperText={formik.touched.occupation && formik.errors.occupation}
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 />
               </Grid>
 
@@ -300,21 +323,29 @@ export default function NewPatient() {
                   onBlur={formik.handleBlur}
                   error={formik.touched.phone && Boolean(formik.errors.phone)}
                   helperText={formik.touched.phone && formik.errors.phone}
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
+                  inputProps={{ maxLength: 11 }}
                 />
               </Grid>
 
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  id="email"
-                  name="email"
-                  label="ایمیل"
-                  type="email"
-                  value={formik.values.email}
+                  id="referralSource"
+                  name="referralSource"
+                  label="نحوه آشنایی"
+                  value={formik.values.referralSource}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.email && Boolean(formik.errors.email)}
-                  helperText={formik.touched.email && formik.errors.email}
+                  error={formik.touched.referralSource && Boolean(formik.errors.referralSource)}
+                  helperText={formik.touched.referralSource && formik.errors.referralSource}
+                  sx={{ 
+                    '& .MuiInputBase-root': { height: '56px' },
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 />
               </Grid>
 
@@ -331,34 +362,9 @@ export default function NewPatient() {
                   helperText={formik.touched.address && formik.errors.address}
                   multiline
                   rows={2}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  id="referralSource"
-                  name="referralSource"
-                  label="نحوه آشنایی"
-                  value={formik.values.referralSource}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.referralSource && Boolean(formik.errors.referralSource)}
-                  helperText={formik.touched.referralSource && formik.errors.referralSource}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  id="chiefComplaint"
-                  name="chiefComplaint"
-                  label="شکایت اصلی"
-                  value={formik.values.chiefComplaint}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.chiefComplaint && Boolean(formik.errors.chiefComplaint)}
-                  helperText={formik.touched.chiefComplaint && formik.errors.chiefComplaint}
+                  sx={{ 
+                    '& .MuiFormHelperText-root': { marginTop: '4px' }
+                  }}
                 />
               </Grid>
 
