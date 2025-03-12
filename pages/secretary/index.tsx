@@ -95,7 +95,7 @@ export default function SecretaryDashboard() {
           setTodayVisits(visitsData);
           
           // دریافت بیماران اخیر از API
-          const patientsResponse = await api.get('/api/patients/search?limit=5&sort=lastVisit');
+          const patientsResponse = await api.get('/api/patients/recent?limit=5&sort=lastVisit');
           const patientsData = patientsResponse.data.patients.map((patient: any) => ({
             id: patient.id,
             fileNumber: patient.file_number || `P${patient.id}`,

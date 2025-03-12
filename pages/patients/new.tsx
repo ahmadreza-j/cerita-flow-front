@@ -13,7 +13,8 @@ import {
   Select,
   MenuItem,
   FormHelperText,
-  Container
+  Container,
+  LinearProgress
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
@@ -59,6 +60,7 @@ export default function NewPatient() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [fileNumber, setFileNumber] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -70,6 +72,23 @@ export default function NewPatient() {
       router.push('/');
     }
   }, [isAuthenticated, user, router]);
+
+  useEffect(() => {
+    let redirectTimer: NodeJS.Timeout;
+    
+    if (success && !redirecting) {
+      setRedirecting(true);
+      redirectTimer = setTimeout(() => {
+        router.push('/patients');
+      }, 2000);
+    }
+    
+    return () => {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer);
+      }
+    };
+  }, [success, router, redirecting]);
 
   const formik = useFormik<PatientFormValues>({
     initialValues: {
@@ -88,6 +107,7 @@ export default function NewPatient() {
       try {
         setError(null);
         setSuccess(null);
+        setRedirecting(false);
         
         // Prepare data for API
         const patientData = {
@@ -103,11 +123,16 @@ export default function NewPatient() {
         };
         
         // Create the patient
-        const patientResponse = await api.post('/api/patients', patientData);
+        const response = await api.post('/api/patients', patientData);
         
-        if (patientResponse.data.id) {
+        if (response.data.patient) {
           setSuccess('بیمار با موفقیت ثبت شد');
-          setFileNumber(patientResponse.data.fileNumber);
+          setFileNumber(response.data.patient.fileNumber);
+          
+          // Navigate back after 2 seconds
+          setTimeout(() => {
+            router.back();
+          }, 2000);
         }
       } catch (err: any) {
         if (err.response?.data?.message === 'این کد ملی قبلاً ثبت شده است') {
@@ -167,6 +192,14 @@ export default function NewPatient() {
           {success && (
             <Alert severity="success" sx={{ mb: 3 }}>
               {success}
+              {redirecting && (
+                <>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    در حال بازگشت به صفحه لیست بیماران...
+                  </Typography>
+                  <LinearProgress sx={{ mt: 1 }} />
+                </>
+              )}
               {fileNumber && (
                 <Box sx={{ mt: 1 }}>
                   <Typography variant="body2">
@@ -385,7 +418,10 @@ export default function NewPatient() {
                     disabled={formik.isSubmitting}
                   >
                     {formik.isSubmitting ? (
-                      <CircularProgress size={24} color="inherit" />
+                      <>
+                        <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
+                        در حال ثبت...
+                      </>
                     ) : (
                       'ثبت بیمار'
                     )}

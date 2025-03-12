@@ -54,7 +54,7 @@ const PatientsPage: React.FC = () => {
     const fetchRecentPatients = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/patients/recent');
+        const response = await api.get('/api/patients/recent?limit=10');
         setRecentPatients(response.data.patients || []);
       } catch (err) {
         console.error('Failed to fetch recent patients:', err);
