@@ -216,7 +216,7 @@ const PatientsPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => router.push('/secretary/patients/new')}
+            onClick={() => router.push('/patients/new')}
           >
             ثبت بیمار جدید
           </Button>

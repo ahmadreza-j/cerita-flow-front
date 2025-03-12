@@ -190,7 +190,7 @@ export default function SecretaryDashboard() {
             variant="contained" 
             color="primary" 
             startIcon={<AddIcon />}
-            onClick={() => router.push('/secretary/patients/new')}
+            onClick={() => router.push('/patients/new')}
           >
             ثبت بیمار جدید
           </Button>
