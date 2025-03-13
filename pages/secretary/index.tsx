@@ -237,7 +237,7 @@ export default function SecretaryDashboard() {
                             <IconButton 
                               edge="end" 
                               sx={{ mr: 1 }}
-                              onClick={() => router.push(`/secretary/patients/${patient.id}`)}
+                              onClick={() => router.push(`/patients/${patient.id}`)}
                             >
                               <VisibilityIcon />
                             </IconButton>
@@ -373,7 +373,7 @@ export default function SecretaryDashboard() {
                 action={
                   <Button 
                     size="small" 
-                    onClick={() => router.push('/secretary/patients')}
+                    onClick={() => router.push('/patients')}
                   >
                     مشاهده همه
                   </Button>
@@ -392,7 +392,7 @@ export default function SecretaryDashboard() {
                           secondaryAction={
                             <IconButton 
                               edge="end" 
-                              onClick={() => router.push(`/secretary/patients/${patient.id}`)}
+                              onClick={() => router.push(`/patients/${patient.id}`)}
                             >
                               <VisibilityIcon />
                             </IconButton>

@@ -17,9 +17,13 @@ import {
   EventNote as EventNoteIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
-import SecretaryLayout from '../../../../src/components/layout/SecretaryLayout';
-import api from '../../../../src/utils/api';
-import { formatPersianDate } from '../../../../src/utils/dateUtils';
+import SecretaryLayout from '../../../src/components/layout/SecretaryLayout';
+import DoctorLayout from '../../../src/components/layout/DoctorLayout';
+import OpticianLayout from '../../../src/components/layout/OpticianLayout';
+import api from '../../../src/utils/api';
+import { formatPersianDate } from '../../../src/utils/dateUtils';
+import useAuth from '../../../src/hooks/useAuth';
+import { Role } from '../../../src/types/auth';
 
 // Tab Panel Component
 interface TabPanelProps {
@@ -48,7 +52,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-// Interface definitions
 interface Patient {
   id: number;
   fileNumber: string;
@@ -75,69 +78,69 @@ interface Visit {
 const PatientDetailPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
-  
   const [patient, setPatient] = useState<Patient | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchPatientData = async () => {
-      if (!id) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch patient details
-        const patientResponse = await api.get(`/api/patients/${id}`);
-        
-        if (patientResponse.data) {
-          const patientData = patientResponse.data;
-          setPatient({
-            id: patientData.id,
-            fileNumber: patientData.file_number,
-            nationalId: patientData.national_id,
-            firstName: patientData.first_name,
-            lastName: patientData.last_name,
-            age: patientData.age,
-            gender: patientData.gender,
-            phone: patientData.phone,
-            address: patientData.address,
-            registrationDate: patientData.registration_date
-          });
-          
-          // Fetch patient visits
-          const visitsResponse = await api.get(`/api/patients/${id}/visits`);
-          
-          if (visitsResponse.data) {
-            const visitsData = visitsResponse.data.map((visit: any) => ({
-              id: visit.id,
-              visitDate: visit.visit_date,
-              visitTime: visit.visit_time,
-              status: visit.status,
-              doctorName: visit.doctor_first_name && visit.doctor_last_name 
-                ? `${visit.doctor_first_name} ${visit.doctor_last_name}` 
-                : 'نامشخص',
-              diagnosis: visit.diagnosis,
-              prescription: visit.prescription
-            }));
-            setVisits(visitsData);
-          }
-        } else {
-          setError('اطلاعات بیمار یافت نشد');
-        }
-      } catch (err) {
-        console.error('Error fetching patient data:', err);
-        setError('خطا در دریافت اطلاعات بیمار');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPatientData();
+    if (id) {
+      fetchPatientData();
+    }
   }, [id]);
+
+  const fetchPatientData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch patient details
+      const patientResponse = await api.get(`/api/patients/${id}`);
+      
+      if (patientResponse.data) {
+        const patientData = patientResponse.data;
+        setPatient({
+          id: patientData.id,
+          fileNumber: patientData.fileNumber || patientData.file_number,
+          nationalId: patientData.nationalId || patientData.national_id,
+          firstName: patientData.firstName || patientData.first_name,
+          lastName: patientData.lastName || patientData.last_name,
+          age: patientData.age,
+          gender: patientData.gender,
+          phone: patientData.phone,
+          address: patientData.address,
+          registrationDate: patientData.registrationDate || patientData.registration_date
+        });
+        
+        // Fetch patient visits
+        const visitsResponse = await api.get(`/api/patients/${id}/visits`);
+        
+        if (visitsResponse.data) {
+          const visitsData = visitsResponse.data.map((visit: any) => ({
+            id: visit.id,
+            visitDate: visit.visitDate || visit.visit_date,
+            visitTime: visit.visitTime || visit.visit_time,
+            status: visit.status,
+            doctorName: visit.doctorName || (visit.doctor_first_name && visit.doctor_last_name 
+              ? `${visit.doctor_first_name} ${visit.doctor_last_name}` 
+              : 'نامشخص'),
+            diagnosis: visit.diagnosis,
+            prescription: visit.prescription
+          }));
+          setVisits(visitsData);
+        }
+      } else {
+        setError('اطلاعات بیمار یافت نشد');
+      }
+    } catch (err) {
+      console.error('Error fetching patient data:', err);
+      setError('خطا در دریافت اطلاعات بیمار');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -159,12 +162,12 @@ const PatientDetailPage: React.FC = () => {
       if (visitsResponse.data) {
         const visitsData = visitsResponse.data.map((visit: any) => ({
           id: visit.id,
-          visitDate: visit.visit_date,
-          visitTime: visit.visit_time,
+          visitDate: visit.visitDate || visit.visit_date,
+          visitTime: visit.visitTime || visit.visit_time,
           status: visit.status,
-          doctorName: visit.doctor_first_name && visit.doctor_last_name 
+          doctorName: visit.doctorName || (visit.doctor_first_name && visit.doctor_last_name 
             ? `${visit.doctor_first_name} ${visit.doctor_last_name}` 
-            : 'نامشخص',
+            : 'نامشخص'),
           diagnosis: visit.diagnosis,
           prescription: visit.prescription
         }));
@@ -179,7 +182,7 @@ const PatientDetailPage: React.FC = () => {
   const getGenderLabel = (gender?: string) => {
     if (!gender) return 'نامشخص';
     
-    switch (gender.toLowerCase()) {
+    switch (gender?.toLowerCase()) {
       case 'male':
       case 'مرد':
       case 'm':
@@ -198,7 +201,7 @@ const PatientDetailPage: React.FC = () => {
   };
 
   const getVisitStatusLabel = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending':
         return 'در انتظار';
       case 'in_progress':
@@ -207,44 +210,64 @@ const PatientDetailPage: React.FC = () => {
         return 'تکمیل شده';
       case 'cancelled':
         return 'لغو شده';
+      case 'scheduled':
+        return 'برنامه‌ریزی شده';
       default:
         return status;
     }
   };
 
+  // Determine which layout to use based on user role
+  const getLayout = () => {
+    if (!user) return SecretaryLayout;
+    
+    switch (user.role) {
+      case Role.SECRETARY:
+        return SecretaryLayout;
+      case Role.DOCTOR:
+        return DoctorLayout;
+      case Role.OPTICIAN:
+        return OpticianLayout;
+      default:
+        return SecretaryLayout;
+    }
+  };
+
+  const Layout = getLayout();
+
   if (loading) {
     return (
-      <SecretaryLayout>
+      <Layout>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <CircularProgress />
         </Box>
-      </SecretaryLayout>
+      </Layout>
     );
   }
 
   if (error || !patient) {
     return (
-      <SecretaryLayout>
+      <Layout>
         <Box sx={{ mb: 4 }}>
           <Button 
             startIcon={<ArrowBackIcon />} 
-            onClick={() => router.push('/secretary/patients')}
+            onClick={() => router.push('/patients')}
             sx={{ mb: 2 }}
           >
             بازگشت به لیست بیماران
           </Button>
           <Alert severity="error">{error || 'اطلاعات بیمار یافت نشد'}</Alert>
         </Box>
-      </SecretaryLayout>
+      </Layout>
     );
   }
 
   return (
-    <SecretaryLayout>
+    <Layout>
       <Box sx={{ mb: 4 }}>
         <Button 
           startIcon={<ArrowBackIcon />} 
-          onClick={() => router.push('/secretary/patients')}
+          onClick={() => router.push('/patients')}
           sx={{ mb: 2 }}
         >
           بازگشت به لیست بیماران
@@ -257,7 +280,7 @@ const PatientDetailPage: React.FC = () => {
                 پرونده بیمار: {patient.firstName} {patient.lastName}
               </Typography>
               <Typography variant="body2">
-                شماره پرونده: {patient.fileNumber} | کد ملی: {patient.nationalId} | تاریخ ثبت: {patient.registrationDate}
+                شماره پرونده: {patient.fileNumber} | کد ملی: {patient.nationalId} | تاریخ ثبت: {formatPersianDate(patient.registrationDate)}
               </Typography>
             </Box>
             <Box>
@@ -265,7 +288,7 @@ const PatientDetailPage: React.FC = () => {
                 variant="contained" 
                 color="secondary" 
                 startIcon={<EditIcon />}
-                onClick={() => router.push(`/secretary/patients/${patient.id}/edit`)}
+                onClick={() => router.push(`/patients/${patient.id}/edit`)}
                 sx={{ mr: 1 }}
               >
                 ویرایش اطلاعات
@@ -330,7 +353,7 @@ const PatientDetailPage: React.FC = () => {
                           تاریخ مراجعه:
                         </Typography>
                         <Typography variant="body1">
-                          {visit.visitDate}
+                          {formatPersianDate(visit.visitDate)}
                         </Typography>
                       </Grid>
                       <Grid item xs={12} sm={6} md={3}>
@@ -385,7 +408,7 @@ const PatientDetailPage: React.FC = () => {
           </TabPanel>
         </Paper>
       </Box>
-    </SecretaryLayout>
+    </Layout>
   );
 };
 

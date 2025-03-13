@@ -115,7 +115,7 @@ interface DoctorLayoutProps {
 const menuItems = [
   { text: "داشبورد", icon: <DashboardIcon />, path: "/doctor" },
   { text: "نوبت‌های امروز", icon: <EventIcon />, path: "/doctor/today-visits" },
-  { text: "بیماران", icon: <PersonIcon />, path: "/doctor/patients" },
+  { text: "بیماران", icon: <PersonIcon />, path: "/patients" },
   { text: "معاینات", icon: <MedicalServicesIcon />, path: "/doctor/examinations" },
 ];
 

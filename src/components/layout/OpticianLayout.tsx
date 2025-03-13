@@ -31,6 +31,7 @@ import {
   Visibility as VisibilityIcon,
   Notifications as NotificationsIcon,
   Search as SearchIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import useAuth from "../../hooks/useAuth";
@@ -112,6 +113,7 @@ interface OpticianLayoutProps {
 
 const menuItems = [
   { text: "داشبورد", icon: <DashboardIcon />, path: "/optician" },
+  { text: "بیماران", icon: <PersonIcon />, path: "/patients" },
   {
     text: "بیماران نیازمند عینک",
     icon: <VisibilityIcon />,

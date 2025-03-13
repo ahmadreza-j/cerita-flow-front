@@ -112,7 +112,7 @@ interface SecretaryLayoutProps {
 const menuItems = [
     { text: 'داشبورد', icon: <DashboardIcon />, path: '/secretary' },
     { text: 'مدیریت نوبت‌ها', icon: <EventIcon />, path: '/secretary/visits' },
-    { text: 'مدیریت بیماران', icon: <PersonAddIcon />, path: '/secretary/patients' },
+    { text: 'مدیریت بیماران', icon: <PersonAddIcon />, path: '/patients' },
     { text: 'پرونده‌ها', icon: <AssignmentIcon />, path: '/secretary/records' }
 ];
 
