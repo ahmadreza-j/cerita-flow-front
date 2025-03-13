@@ -26,6 +26,7 @@ import {
 import { useRouter } from "next/router";
 import api from "../../src/utils/api";
 import SecretaryLayout from "../../src/components/layout/SecretaryLayout";
+import { formatPersianDate } from "../../src/utils/dateUtils";
 
 interface Patient {
   id: number;
@@ -150,7 +151,7 @@ const PatientsPage: React.FC = () => {
       const response = await api.post("/api/visits", visitData);
 
       // Navigate to the patient file view
-      router.push(`/secretary/patients/${patientId}`);
+      router.push(`/patients/${patientId}`);
     } catch (err) {
       console.error("Failed to add visit:", err);
       setError("خطا در ثبت مراجعه جدید");
@@ -175,6 +176,30 @@ const PatientsPage: React.FC = () => {
         return "سایر";
       default:
         return "نامشخص";
+    }
+  };
+
+  // تابع کمکی برای نمایش صحیح تاریخ شمسی
+  const formatCorrectPersianDate = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return 'نامشخص';
+    
+    try {
+      // اگر تاریخ به فرمت خاصی است، آن را مستقیماً نمایش دهیم
+      if (typeof dateStr === 'string' && dateStr.includes('/')) {
+        // اگر تاریخ به فرمت شمسی است (مثلاً 1402/10/01)
+        return dateStr;
+      }
+      
+      const date = new Date(dateStr);
+      // بررسی معتبر بودن تاریخ
+      if (isNaN(date.getTime())) {
+        return 'نامشخص';
+      }
+      
+      return formatPersianDate(date);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'نامشخص';
     }
   };
 
@@ -211,12 +236,12 @@ const PatientsPage: React.FC = () => {
                   <TableCell>{patient.nationalId}</TableCell>
                   <TableCell>{patient.age || "نامشخص"}</TableCell>
                   <TableCell>{getGenderLabel(patient.gender)}</TableCell>
-                  <TableCell>{patient.registrationDate}</TableCell>
+                  <TableCell>{formatCorrectPersianDate(patient.registrationDate)}</TableCell>
                   <TableCell>
                     <IconButton
                       color="primary"
                       onClick={() =>
-                        router.push(`/secretary/patients/${patient.id}`)
+                        router.push(`/patients/${patient.id}`)
                       }
                       title="مشاهده پرونده"
                     >
@@ -225,7 +250,7 @@ const PatientsPage: React.FC = () => {
                     <IconButton
                       color="secondary"
                       onClick={() =>
-                        router.push(`/secretary/patients/${patient.id}/edit`)
+                        router.push(`/patients/${patient.id}/edit`)
                       }
                       title="ویرایش اطلاعات"
                     >
@@ -265,7 +290,7 @@ const PatientsPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => router.push("/secretary/patients/new")}
+            onClick={() => router.push("/patients/new")}
           >
             ثبت بیمار جدید
           </Button>
@@ -300,12 +325,12 @@ const PatientsPage: React.FC = () => {
             >
               {loading ? <CircularProgress size={24} /> : "جستجو"}
             </Button>
-          </Box>
+        </Box>
 
           {error && (
             <Typography color="error" sx={{ mt: 2 }}>
               {error}
-            </Typography>
+        </Typography>
           )}
 
           {searchResults.length > 0 &&

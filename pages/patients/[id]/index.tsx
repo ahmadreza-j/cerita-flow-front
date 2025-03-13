@@ -25,6 +25,30 @@ import { formatPersianDate } from '../../../src/utils/dateUtils';
 import useAuth from '../../../src/hooks/useAuth';
 import { Role } from '../../../src/types/auth';
 
+// تابع کمکی برای نمایش صحیح تاریخ شمسی
+const formatCorrectPersianDate = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return 'نامشخص';
+  
+  try {
+    // اگر تاریخ به فرمت خاصی است، آن را مستقیماً نمایش دهیم
+    if (typeof dateStr === 'string' && dateStr.includes('/')) {
+      // اگر تاریخ به فرمت شمسی است (مثلاً 1402/10/01)
+      return dateStr;
+    }
+    
+    const date = new Date(dateStr);
+    // بررسی معتبر بودن تاریخ
+    if (isNaN(date.getTime())) {
+      return 'نامشخص';
+    }
+    
+    return formatPersianDate(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'نامشخص';
+  }
+};
+
 // Tab Panel Component
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -280,7 +304,7 @@ const PatientDetailPage: React.FC = () => {
                 پرونده بیمار: {patient.firstName} {patient.lastName}
               </Typography>
               <Typography variant="body2">
-                شماره پرونده: {patient.fileNumber} | کد ملی: {patient.nationalId} | تاریخ ثبت: {formatPersianDate(patient.registrationDate)}
+                شماره پرونده: {patient.fileNumber} | کد ملی: {patient.nationalId} | تاریخ ثبت: {formatCorrectPersianDate(patient.registrationDate)}
               </Typography>
             </Box>
             <Box>
@@ -353,7 +377,7 @@ const PatientDetailPage: React.FC = () => {
                           تاریخ مراجعه:
                         </Typography>
                         <Typography variant="body1">
-                          {formatPersianDate(visit.visitDate)}
+                          {formatCorrectPersianDate(visit.visitDate)}
                         </Typography>
                       </Grid>
                       <Grid item xs={12} sm={6} md={3}>
