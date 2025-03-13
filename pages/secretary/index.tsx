@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { 
   Box, 
@@ -20,7 +20,8 @@ import {
   TextField,
   InputAdornment,
   Fab,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import useAuth from '../../src/hooks/useAuth';
 import { Role } from '../../src/types/auth';
@@ -31,6 +32,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import api from '../../src/utils/api';
 import { format } from 'date-fns-jalali';
 
@@ -62,6 +64,7 @@ export default function SecretaryDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -74,28 +77,42 @@ export default function SecretaryDashboard() {
     }
   }, [isAuthenticated, user, router]);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (isAuthenticated && user?.role === Role.SECRETARY) {
-        try {
-          setLoading(true);
-          
-          // دریافت مراجعات امروز از API
-          const today = new Date().toISOString().split('T')[0];
-          const visitsResponse = await api.get(`/api/visits/clinic?startDate=${today}&endDate=${today}`);
+  // استخراج تابع fetchDashboardData به عنوان یک useCallback
+  const fetchDashboardData = useCallback(async () => {
+    if (isAuthenticated && user?.role === Role.SECRETARY) {
+      try {
+        setRefreshing(true);
+        
+        // دریافت مراجعات امروز از API
+        // تغییر فرمت تاریخ برای تطابق با فرمت ذخیره شده در دیتابیس
+        // در دیتابیس تاریخ به فرمت شمسی ذخیره می‌شود (YYYY/MM/DD)
+        const today = new Date();
+        const persianDate = format(today, 'yyyy/MM/dd');
+        console.log('Fetching visits for Persian date:', persianDate);
+        
+        const visitsResponse = await api.get(`/api/visits/clinic?startDate=${persianDate}&endDate=${persianDate}`);
+        console.log('Visits API response:', visitsResponse.data);
+        
+        if (visitsResponse.data && Array.isArray(visitsResponse.data.visits)) {
           const visitsData = visitsResponse.data.visits.map((visit: any) => ({
             id: visit.id,
             patientName: `${visit.patient_first_name} ${visit.patient_last_name}`,
             patientId: visit.patient_id,
-            time: visit.visitTime,
-            doctorName: `${visit.doctor_first_name} ${visit.doctor_last_name}`,
+            time: visit.visitTime || format(new Date(`2000-01-01T${visit.visit_time}`), 'HH:mm'),
+            doctorName: visit.doctor_id ? `${visit.doctor_first_name} ${visit.doctor_last_name}` : 'تعیین نشده',
             status: visit.status
           }));
           
           setTodayVisits(visitsData);
-          
-          // دریافت بیماران اخیر از API
-          const patientsResponse = await api.get('/api/patients/recent?limit=5&sort=lastVisit');
+        } else {
+          console.error('Invalid visits data format:', visitsResponse.data);
+          setTodayVisits([]);
+        }
+        
+        // دریافت بیماران اخیر از API
+        const patientsResponse = await api.get('/api/patients/recent?limit=5&sort=lastVisit');
+        
+        if (patientsResponse.data && Array.isArray(patientsResponse.data.patients)) {
           const patientsData = patientsResponse.data.patients.map((patient: any) => ({
             id: patient.id,
             fileNumber: patient.file_number || `P${patient.id}`,
@@ -106,17 +123,30 @@ export default function SecretaryDashboard() {
           }));
           
           setRecentPatients(patientsData);
-          
-        } catch (error) {
-          console.error('Error fetching dashboard data:', error);
-        } finally {
-          setLoading(false);
+        } else {
+          console.error('Invalid patients data format:', patientsResponse.data);
+          setRecentPatients([]);
         }
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setTodayVisits([]);
+        setRecentPatients([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    };
-    
-    fetchDashboardData();
+    }
   }, [isAuthenticated, user]);
+  
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // تابع بازیابی مجدد اطلاعات
+  const handleRefresh = () => {
+    fetchDashboardData();
+  };
 
   // جستجوی بیمار
   const handleSearch = async () => {
@@ -183,17 +213,28 @@ export default function SecretaryDashboard() {
               داشبورد منشی
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              {format(new Date(), 'yyyy/MM/dd')} - خوش آمدید {user.firstName} {user.lastName}
+              {format(new Date(), 'yyyy/MM/dd')} - خوش آمدید {user?.firstName} {user?.lastName}
             </Typography>
           </Box>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<AddIcon />}
-            onClick={() => router.push('/patients/new')}
-          >
-            ثبت بیمار جدید
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              بازیابی
+            </Button>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => router.push('/patients/new')}
+            >
+              ثبت بیمار جدید
+            </Button>
+          </Box>
         </Box>
 
         <Grid container spacing={3}>
@@ -286,16 +327,29 @@ export default function SecretaryDashboard() {
               <CardHeader 
                 title="مراجعات امروز" 
                 action={
-                  <Button 
-                    size="small" 
-                    onClick={() => router.push('/secretary/visits')}
-                  >
-                    مشاهده همه
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                    >
+                      {refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+                    </IconButton>
+                    <Button 
+                      size="small" 
+                      onClick={() => router.push('/secretary/visits')}
+                    >
+                      مشاهده همه
+                    </Button>
+                  </Box>
                 }
               />
               <CardContent>
-                {todayVisits.length === 0 ? (
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : todayVisits.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" align="center">
                     امروز مراجعه‌ای ثبت نشده است.
                   </Typography>
